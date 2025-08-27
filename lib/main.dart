@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:joy_way/AuthWrapper.dart';
 import 'package:joy_way/screens/authentication/foudation_of_auth.dart';
-import 'package:joy_way/screens/authentication/welcome_screen.dart';
 import 'package:joy_way/screens/home/foundation_of_home.dart';
 import 'config/theme.dart';
 import 'firebase_options.dart';
@@ -27,7 +26,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) =>  FoundationOfAuth(),
         '/home': (context) => const FoundationOfHome(),
-        '/welcome': (context) =>  WelcomeScreen(),
       },
     );
   }

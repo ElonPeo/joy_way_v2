@@ -59,12 +59,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
     Color.fromRGBO(74, 98, 138, 1),
     Color.fromRGBO(152, 205, 126, 1),
   ];
-  List<Color> _colorListIcon = [
-    Color.fromRGBO(167, 0, 20, 1),
-    Color.fromRGBO(209, 70, 0, 1),
-    Color.fromRGBO(10, 57, 129, 1),
-    Color.fromRGBO(52, 121, 40, 1),
-  ];
+
 
   List<String> _titleErr = ["Oh Snap!", "Warning!", "Hi There!", "Well done!"];
   List<String> _iconPath = [
@@ -94,7 +89,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
           ),
         );
 
-    // 3. ✨ Sử dụng TweenSequence để tạo hiệu ứng scale theo chuỗi
+    // 3. Sử dụng TweenSequence để tạo hiệu ứng scale theo chuỗi
     _scaleAnimation = TweenSequence<double>([
       // Giai đoạn 1: Phóng to từ nhỏ đến kích thước thật (overshoot)
       TweenSequenceItem(tween: Tween<double>(begin: 0.5, end: 1), weight: 70.0),
@@ -181,7 +176,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                               Positioned(
                                 top: 0,
                                 right: 0,
-                                child: Container(
+                                child: SizedBox(
                                   height: 50,
                                   width: 55,
                                   child: Transform.rotate(
@@ -201,7 +196,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Container(
-                                        margin: EdgeInsets.all(20),
+                                        margin: const EdgeInsets.all(20),
                                         height: 50,
                                         width: 50,
                                         decoration: BoxDecoration(
@@ -209,7 +204,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                           borderRadius: BorderRadius.circular(15),
                                         ),
                                         child: Center(
-                                          child: Container(
+                                          child: SizedBox(
                                             height: 30,
                                             width: 30,
                                             child: SvgPicture.asset(
@@ -220,7 +215,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                         ),
                                       ),
                                       Container(
-                                        margin: EdgeInsets.symmetric(vertical: 20),
+                                        margin: const EdgeInsets.symmetric(vertical: 20),
                                         width: screenWidth - 140,
                                         child: Column(
                                           mainAxisAlignment:
@@ -230,7 +225,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                           children: [
                                             Text(
                                               _titleErr[widget.type],
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 15,
@@ -238,7 +233,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                             ),
                                             Text(
                                               widget.errorMessage,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   color: Color.fromRGBO(240, 240, 240, 1),
                                                   fontSize: 11
                                               ),

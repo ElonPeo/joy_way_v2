@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:joy_way/screens/authentication/welcome_screen.dart';
+import 'package:joy_way/screens/authentication/foudation_of_auth.dart';
 import 'package:joy_way/screens/home/foundation_of_home.dart';
 
 
@@ -16,9 +16,9 @@ class AuthWrapper extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasData) {
-          return FoundationOfHome();
+          return const FoundationOfHome();
         } else {
-          return  WelcomeScreen();
+          return  const FoundationOfAuth();
         }
       },
     );

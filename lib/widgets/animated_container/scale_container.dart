@@ -5,8 +5,6 @@ class ScaleContainer extends StatefulWidget {
   final double fatherHeight;
   final Widget child;
   final Duration duration;
-  final Color firstColor;
-  final Color secondColor;
   final bool animation;
   final Curve curve;
 
@@ -17,8 +15,6 @@ class ScaleContainer extends StatefulWidget {
     required this.animation,
     required this.child,
     this.duration = const Duration(milliseconds: 500),
-    this.firstColor = const Color.fromRGBO(252, 239, 203, 1),
-    this.secondColor = const Color.fromRGBO(254, 93, 38, 1),
     this.curve = Curves.easeOutExpo,
   });
 

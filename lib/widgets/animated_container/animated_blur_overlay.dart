@@ -2,48 +2,29 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class AnimatedBlurOverlay extends StatefulWidget {
-  /// Kích thước vùng phủ blur (bao ngoài)
-  final double width;
-  final double height;
-
-  /// Nội dung bên dưới lớp blur
+  final double fatherWidth;
+  final double fatherHeight;
+  final Color fatherColor;
   final Widget child;
 
-  /// Bật/tắt blur (đổi giá trị này để mờ dần/rõ dần)
-  final bool blurOn;
-
-  /// Mức mờ tối đa
   final double maxSigma;
-
-  /// Thời lượng & đường cong animation
   final Duration duration;
   final Curve curve;
 
-  /// Bo góc vùng blur (nên dùng để clip)
-  final BorderRadius? borderRadius;
-
-  /// Màu phủ mờ phía trên (tuỳ chọn), ví dụ trắng trong suốt để “mềm” hơn
-  final Color baseColor;
-
-  /// Cho phép tương tác không
-  final bool absorbPointer;
-
-  /// Có animate khi blurOn đổi không (nếu false -> nhảy ngay)
-  final bool animate;
+  final bool fadeIn;
+  final bool animation;
 
   const AnimatedBlurOverlay({
-    super.key,
+    this.fatherHeight = 100,
+    this.fatherWidth = 100,
+    this.fatherColor = Colors.transparent,
+    this.maxSigma = 20,
+    this.duration = const Duration(milliseconds: 500),
+    this.curve = Curves.easeOutExpo,
+    required this.animation,
+    this.fadeIn = false,
     required this.child,
-    required this.blurOn,
-    this.width = 200,
-    this.height = 200,
-    this.maxSigma = 16,
-    this.duration = const Duration(milliseconds: 450),
-    this.curve = Curves.easeInOut,
-    this.borderRadius,
-    this.baseColor = Colors.transparent,
-    this.absorbPointer = false,
-    this.animate = true,
+    super.key,
   });
 
   @override
@@ -52,85 +33,94 @@ class AnimatedBlurOverlay extends StatefulWidget {
 
 class _AnimatedBlurOverlayState extends State<AnimatedBlurOverlay>
     with SingleTickerProviderStateMixin {
-  late AnimationController _c;
-  late Animation<double> _sigma;
+  late AnimationController _controller;
+  late Animation<double> _blurAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(vsync: this, duration: widget.duration);
-    _buildAnimation();
-    _c.value = widget.blurOn ? 1.0 : 0.0;
+    _controller = AnimationController(duration: widget.duration, vsync: this);
+    _setupAnimations();
+    if (widget.animation) _controller.forward();
   }
 
-  void _buildAnimation() {
-    _sigma = Tween<double>(begin: 0.0, end: widget.maxSigma)
-        .animate(CurvedAnimation(parent: _c, curve: widget.curve));
+  void _setupAnimations() {
+    final curved = CurvedAnimation(parent: _controller, curve: widget.curve);
+    _blurAnimation = Tween<double>(
+      begin: widget.fadeIn ? 0 : widget.maxSigma,
+      end: widget.fadeIn ? widget.maxSigma : 0,
+    ).animate(curved);
+    if(widget.fadeIn) {
+      _opacityAnimation = Tween<double>(
+        begin: 1.0,
+        end: 0.0,
+      ).animate(CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutExpo,
+      ));
+    } else
+      {
+        _opacityAnimation = Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).animate(CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOutExpo,
+        ));
+      }
   }
 
   @override
   void didUpdateWidget(covariant AnimatedBlurOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.duration != widget.duration) {
-      _c.duration = widget.duration;
+      _controller.duration = widget.duration;
     }
-    if (oldWidget.curve != widget.curve || oldWidget.maxSigma != widget.maxSigma) {
-      final v = _c.value;
-      _buildAnimation();
-      _c.value = v;
+    if (oldWidget.fadeIn != widget.fadeIn ||
+        oldWidget.curve != widget.curve ||
+        oldWidget.maxSigma != widget.maxSigma) {
+      _setupAnimations();
     }
-    if (oldWidget.blurOn != widget.blurOn) {
-      if (widget.animate) {
-        widget.blurOn ? _c.forward() : _c.reverse();
+    if (oldWidget.animation != widget.animation) {
+      if (widget.animation) {
+        _controller.forward(from: 0);
       } else {
-        _c.value = widget.blurOn ? 1.0 : 0.0;
+        _controller.stop();
+        _controller.reset();
       }
     }
   }
 
   @override
   void dispose() {
-    _c.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final content = SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.child,
-          AnimatedBuilder(
-            animation: _sigma,
-            builder: (context, _) {
-              final blur = _sigma.value;
-              final clipped = ClipRRect(
-                borderRadius: widget.borderRadius ?? BorderRadius.zero,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                  child: Container(
-                    color: widget.blurOn ? Colors.white : Colors.transparent,
-                  ),
+    return SizedBox(
+      height: widget.fatherHeight,
+      width: widget.fatherWidth,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Opacity(
+            opacity: _opacityAnimation.value,
+            child: Container(
+              color: widget.fatherColor,
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(
+                  sigmaX: _blurAnimation.value,
+                  sigmaY: _blurAnimation.value,
                 ),
-              );
-              return widget.absorbPointer
-                  ? AbsorbPointer(child: clipped)
-                  : IgnorePointer(ignoring: true, child: clipped);
-            },
-          ),
-        ],
+                child: widget.child,
+              ),
+            ),
+          );
+        },
       ),
     );
-    if (widget.borderRadius != null) {
-      return ClipRRect(
-        borderRadius: widget.borderRadius!,
-        child: content,
-      );
-    }
-    return content;
   }
 }
-

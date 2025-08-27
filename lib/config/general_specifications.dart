@@ -36,7 +36,7 @@ class GeneralSpecifications {
         // #3E9D6E
         pantoneColor2 = const Color.fromRGBO(44, 122, 84, 1),
         // #6E947C
-        pantoneColor3 = const Color.fromRGBO(110, 148, 124, 1),
+        pantoneColor3 = const Color.fromRGBO(102, 136, 115, 1),
         // #2C98A0
         turquoise1 = const Color.fromRGBO(44, 152, 160, 1),
         // #38B2A3

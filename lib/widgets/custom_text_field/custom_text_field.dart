@@ -77,8 +77,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
             width: 70,
             child: Center(
               child: Image.asset(
-                height: 30,
-                width: 30,
+                height: 25,
+                width: 25,
                 widget.iconAsset,
               ),
             ),
@@ -146,11 +146,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 child: ImageIcon(
                   AssetImage(
                     _isObscure
-                        ? 'assets/icons/authentication/hidden_password.png'
-                        : 'assets/icons/authentication/show_pass.png',
+                        ? 'assets/icons/authentication/eye-crossed.png'
+                        : 'assets/icons/authentication/eye.png',
                   ),
-                  size: 30,
-                  color: specs.black150,
+                  size: 25,
+                  color: specs.pantoneColor3.withOpacity(0.6),
                 ),
               ),
             )
