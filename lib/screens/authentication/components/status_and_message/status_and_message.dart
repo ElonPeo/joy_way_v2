@@ -10,28 +10,18 @@ import '../../../../widgets/animated_container/fade_container.dart';
 
 class StatusAndMessage extends StatefulWidget {
   final bool scaleForLoading;
-  final int type;
-  final bool goToHomePage;
-  final bool isUnsuccessful;
-  final bool passwordRecoveryRequestsSuccessful;
-  final String messages;
-  final Function(bool) onPasswordRecoveryRequest;
+  final int status;
+  final List<String> messages;
   final Function(bool) onScaleLoading;
-  final Function(bool) onUnsuccessful;
-  final Function(String) onMessages;
+  final Function(int) onStatus;
 
   const StatusAndMessage({
     super.key,
-    required this.type,
+    required this.status,
     required this.scaleForLoading,
-    required this.goToHomePage,
     required this.messages,
-    required this.isUnsuccessful,
-    required this.passwordRecoveryRequestsSuccessful,
-    required this.onPasswordRecoveryRequest,
     required this.onScaleLoading,
-    required this.onUnsuccessful,
-    required this.onMessages,
+    required this.onStatus,
   });
 
   @override
@@ -45,8 +35,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
   late Animation<double> _scaleAnim2;
   late Animation<double> _scaleAnim3;
 
-  bool fadeInAnimation1 = false;
-  bool fadeInAnimation2 = false;
+
   bool fadeInCircle = false;
   bool hideTwoCircle = false;
   bool scaleTheFirstCircle = false;
@@ -56,15 +45,16 @@ class _StatusAndMessageState extends State<StatusAndMessage>
   bool hideTitleLoadingText = false;
   bool hideSubTitleLoadingText = false;
 
-  bool fadeIn = false;
   bool showTitleMessage = false;
   bool showSubTitleMessage = false;
-  bool hideTitleMessage = false;
-  bool hideSubTitleMessage = false;
 
+
+  /// Return button
   bool showReturnButton = false;
   bool _isTapDown = false;
+
   /// Icon loading
+  bool showAnimatedIcon = false;
   bool activeLoading = false;
   bool activeSuccessful = false;
   bool activeFail = false;
@@ -77,16 +67,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
         Future.delayed(const Duration(milliseconds: 400), () {
           setState(() {
             fadeInCircle = true;
-          });
-        });
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          setState(() {
-            fadeInAnimation1 = true;
-          });
-        });
-        Future.delayed(const Duration(milliseconds: 2000), () {
-          setState(() {
-            fadeInAnimation2 = true;
+            showAnimatedIcon = true;
           });
         });
         Future.delayed(const Duration(milliseconds: 1200), () {
@@ -101,8 +82,6 @@ class _StatusAndMessageState extends State<StatusAndMessage>
         });
       } else {
         setState(() {
-          fadeInAnimation1 = false;
-          fadeInAnimation2 = false;
           fadeInCircle = false;
           hideTwoCircle = false;
           scaleTheFirstCircle = false;
@@ -110,26 +89,56 @@ class _StatusAndMessageState extends State<StatusAndMessage>
           showSubTitleLoadingText = false;
           hideTitleLoadingText = false;
           hideSubTitleLoadingText = false;
-          fadeIn = false;
           showTitleMessage = false;
           showSubTitleMessage = false;
-          hideTitleMessage = false;
-          hideSubTitleMessage = false;
           showReturnButton = false;
-
-          activeLoading = true;
+          _isTapDown = false;
+          showAnimatedIcon = false;
+          activeLoading = false;
           activeSuccessful = false;
           activeFail = false;
         });
+        Future.delayed(const Duration(milliseconds: 300), () {
+          setState(() {
+            activeLoading = false;
+            activeSuccessful = false;
+            activeFail = false;
+            showAnimatedIcon = false;
+          });
+        });
       }
     }
-    if (oldWidget.passwordRecoveryRequestsSuccessful !=
-            widget.passwordRecoveryRequestsSuccessful ||
-        oldWidget.goToHomePage != widget.goToHomePage ||
-        oldWidget.isUnsuccessful != widget.isUnsuccessful) {
-      if (widget.passwordRecoveryRequestsSuccessful ||
-          widget.goToHomePage ||
-          widget.isUnsuccessful) {
+    if (oldWidget.status != widget.status ){
+      if(widget.status == 0){
+        /// Thất bại
+        setState(() {
+          hideTitleLoadingText = true;
+          hideSubTitleLoadingText = true;
+          showTitleLoadingText = false;
+          showSubTitleLoadingText = false;
+        });
+        Future.delayed(const Duration(milliseconds: 600), () {
+          setState(() {
+            showTitleMessage = true;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 700), () {
+          setState(() {
+            showSubTitleMessage = true;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 700), () {
+          setState(() {
+            activeFail = true;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          setState(() {
+            showReturnButton = true;
+          });
+        });
+      } else if(widget.status == 1){
+        /// Thành cong
         setState(() {
           hideTitleLoadingText = true;
           showTitleLoadingText = false;
@@ -145,45 +154,45 @@ class _StatusAndMessageState extends State<StatusAndMessage>
         Future.delayed(const Duration(milliseconds: 700), () {
           setState(() {
             showSubTitleMessage = true;
+            activeSuccessful = true;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 3000), () {
+          setState(() {
+            showAnimatedIcon = false;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 3300), () {
+          setState(() {
+            scaleTheFirstCircle = true;
+          });
+        });
+      } else if(widget.status == 2){
+        setState(() {
+          hideTitleLoadingText = true;
+          showTitleLoadingText = false;
+          showTitleLoadingText = false;
+          showSubTitleLoadingText = false;
+          hideSubTitleLoadingText = true;
+        });
+        /// Gửi link lấy lại mật khẩu thành công
+        Future.delayed(const Duration(milliseconds: 700), () {
+          setState(() {
+            activeSuccessful = true;
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          setState(() {
+            showReturnButton = true;
           });
         });
       }
-    }
-    if (oldWidget.passwordRecoveryRequestsSuccessful !=
-        widget.passwordRecoveryRequestsSuccessful) {
-      Future.delayed(const Duration(milliseconds: 700), () {
-        setState(() {
-          activeSuccessful = true;
-        });
-      });
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        setState(() {
-          showReturnButton = true;
-        });
-      });
-
-    }
-    if (oldWidget.isUnsuccessful != widget.isUnsuccessful) {
-      Future.delayed(const Duration(milliseconds: 700), () {
-        setState(() {
-          activeFail = true;
-        });
-      });
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        setState(() {
-          showReturnButton = true;
-        });
-      });
-    }
-    if (oldWidget.goToHomePage != widget.goToHomePage) {
-      activeSuccessful = true;
     }
   }
 
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 4000),
@@ -210,7 +219,6 @@ class _StatusAndMessageState extends State<StatusAndMessage>
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
 
-
     return Container(
       height: specs.screenHeight,
       width: specs.screenWidth,
@@ -228,7 +236,6 @@ class _StatusAndMessageState extends State<StatusAndMessage>
       ),
       child: Stack(
         children: [
-
           Positioned(
             top: (specs.screenHeight - 300) / 2 - 80,
             left: (specs.screenWidth - 300) / 2,
@@ -342,35 +349,44 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                                           end: Alignment.bottomCenter,
                                         ),
                                       ),
-
                                     ),
                                   ),
                                 ),
                               ),
-                              Center(
-                                child: Container(
-                                  height: 200,
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                    color: Color.fromRGBO(240, 240, 240, 0.5),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1.5,
-                                      style: BorderStyle.solid,
-                                    ),
-                                  ),
+                              AnimatedScale(
+                                scale: showAnimatedIcon ? 1 : 0.8,
+                                duration: Duration(milliseconds: 100),
+                                child: AnimatedOpacity(
+                                  opacity: showAnimatedIcon ? 1 : 0,
+                                  duration: Duration(milliseconds: 300),
                                   child: Center(
-                                    child: LoadingRiveIcon(
-                                      fatherHeight: 50,
-                                      fatherWidth: 50,
-                                      activeLoading : activeLoading,
-                                      activeSuccessful: activeSuccessful,
-                                      activeFail: activeFail,
+                                      child: Container(
+                                    height: 200,
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                      color: Color.fromRGBO(240, 240, 240, 0.5),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                        style: BorderStyle.solid,
+                                      ),
                                     ),
-                                  ),
-                                )
-                              ),
+                                    child: showAnimatedIcon
+                                        ? Center(
+                                            child: LoadingRiveIcon(
+                                              fatherHeight: 50,
+                                              fatherWidth: 50,
+                                              activeLoading: activeLoading,
+                                              activeSuccessful:
+                                                  activeSuccessful,
+                                              activeFail: activeFail,
+                                            ),
+                                          )
+                                        : SizedBox(),
+                                  )),
+                                ),
+                              )
                             ],
                           ),
                         ),
@@ -456,37 +472,40 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             child: AnimatedBlurOverlay(
               fatherHeight: 100,
               fatherWidth: specs.screenWidth,
-              animation: showTitleMessage,
+              animation: !showAnimatedIcon,
               duration: Duration(milliseconds: 700),
-              fadeIn: fadeIn,
-              child: Container(
-                height: 100,
-                width: specs.screenWidth,
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                        top: hideTitleMessage
-                            ? 0
-                            : showTitleMessage
-                                ? 35
-                                : 100,
-                        left: 0,
-                        duration: const Duration(milliseconds: 1000),
-                        curve: Curves.easeOutCirc,
-                        child: Container(
-                            height: 35,
-                            width: specs.screenWidth,
-                            child: Center(
-                              child: Text(
-                                widget.isUnsuccessful ? 'Warning!' : "Successful",
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w600,
+              fadeIn: true,
+              child: AnimatedBlurOverlay(
+                fatherHeight: 100,
+                fatherWidth: specs.screenWidth,
+                animation: showTitleMessage,
+                duration: Duration(milliseconds: 700),
+                fadeIn: false,
+                child: Container(
+                  height: 100,
+                  width: specs.screenWidth,
+                  child: Stack(
+                    children: [
+                      AnimatedPositioned(
+                          top: showTitleMessage ? 35 : 100,
+                          left: 0,
+                          duration: const Duration(milliseconds: 1000),
+                          curve: Curves.easeOutCirc,
+                          child: Container(
+                              height: 35,
+                              width: specs.screenWidth,
+                              child: Center(
+                                child: Text(
+                                  widget.messages[0],
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ))),
-                  ],
+                              ))),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -494,38 +513,41 @@ class _StatusAndMessageState extends State<StatusAndMessage>
           Positioned(
             top: (specs.screenHeight + 50) / 2 + 50,
             child: AnimatedBlurOverlay(
-              animation: showSubTitleMessage,
+              animation: !showAnimatedIcon,
               fatherHeight: 200,
               fatherWidth: specs.screenWidth,
               duration: Duration(milliseconds: 700),
-              fadeIn: fadeIn,
-              child: Container(
-                height: 200,
-                width: specs.screenWidth,
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                        top: hideTitleMessage
-                            ? 0
-                            : showTitleMessage
-                                ? 35
-                                : 65,
-                        curve: Curves.easeOutCirc,
-                        duration: const Duration(milliseconds: 1000),
-                        child: Container(
-                            width: specs.screenWidth,
-                            padding: EdgeInsets.symmetric(horizontal: 20),
-                            child: Center(
-                              child: Text(
-                                "198273649182763498172362893476",
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.outfit(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: specs.black150),
-                              ),
-                            ))),
-                  ],
+              fadeIn: true,
+              child: AnimatedBlurOverlay(
+                animation: showSubTitleMessage,
+                fatherHeight: 200,
+                fatherWidth: specs.screenWidth,
+                duration: Duration(milliseconds: 700),
+                fadeIn: false,
+                child: Container(
+                  height: 200,
+                  width: specs.screenWidth,
+                  child: Stack(
+                    children: [
+                      AnimatedPositioned(
+                          top: showSubTitleMessage ? 35 : 65,
+                          curve: Curves.easeOutCirc,
+                          duration: const Duration(milliseconds: 1000),
+                          child: Container(
+                              width: specs.screenWidth,
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: Center(
+                                child: Text(
+                                  widget.messages[1],
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.outfit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: specs.black150),
+                                ),
+                              ))),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -540,18 +562,19 @@ class _StatusAndMessageState extends State<StatusAndMessage>
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: (details) async {
-                  setState(() {_isTapDown = true;});
-                  await Future.delayed(const Duration(milliseconds: 150));
-                  setState(() {_isTapDown = false;});
-                  await Future.delayed(const Duration(milliseconds: 150));
                   setState(() {
-                    activeLoading = false;
-                    activeSuccessful = false;
-                    activeFail = false;
+                    _isTapDown = true;
                   });
+                  await Future.delayed(const Duration(milliseconds: 150));
                   setState(() {
+                    _isTapDown = false;
+                  });
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  setState(() {
+                    widget.onStatus(3);
                     widget.onScaleLoading(false);
                   });
+
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),

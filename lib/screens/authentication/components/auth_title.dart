@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/screens/authentication/components/recovery/recovery_screen.dart';
 import 'package:joy_way/widgets/animated_container/animated_blur_overlay.dart';
 import 'package:joy_way/widgets/animated_container/move_and_fade_container.dart';
 
@@ -8,11 +9,12 @@ import '../../../config/general_specifications.dart';
 class AuthTitle extends StatefulWidget {
   final int type;
   final Function(int) onChanged;
-
+  final Function(bool) onHideRecoveryPassword;
   const AuthTitle({
     super.key,
     required this.type,
     required this.onChanged,
+    required this.onHideRecoveryPassword,
   });
 
   @override
@@ -166,8 +168,13 @@ class _AuthTitleState extends State<AuthTitle> {
                   animation: _animationBack,
                   duration: const Duration(milliseconds: 1000),
                   child: GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      widget.onHideRecoveryPassword(true);
+                      if (!mounted) return;
+                      await Future.delayed(const Duration(milliseconds: 10));
                       widget.onChanged(0);
+                      await Future.delayed(const Duration(milliseconds: 20));
+                      widget.onHideRecoveryPassword(false);
                     },
                     child: Container(
                       height: 45,

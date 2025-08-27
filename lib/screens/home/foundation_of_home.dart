@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:joy_way/services/firebase_services/authentication.dart';
 import '../../config/general_specifications.dart';
 
 
@@ -19,6 +18,8 @@ class _FoundationOfHomeState extends State<FoundationOfHome> {
       color: Colors.white,
       child: Stack(
         children: [
+          Text('soiwfghujonw dingvhu owdhug owieudfgoedugf'),
+          IconButton(onPressed: (){Authentication().signOut();}, icon: Icon(Icons.abc, size: 100,)),
         ],
       ),
     );

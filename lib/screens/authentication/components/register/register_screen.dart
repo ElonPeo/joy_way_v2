@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/services/firebase_services/authentication.dart';
+import 'package:joy_way/widgets/notifications/show_notification.dart';
 
 import '../../../../config/general_specifications.dart';
 import '../../../../widgets/animated_container/animated_blur_overlay.dart';
@@ -8,10 +10,14 @@ import '../../../../widgets/animated_container/scale_container.dart';
 import '../../../../widgets/custom_text_field/custom_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
+  final Function(int) onStatus;
+  final Function(List<String>) onMessage;
   final Function(bool) onScaleForLoading;
   const RegisterScreen(
       {super.key,
-        required this.onScaleForLoading
+        required this.onStatus,
+        required this.onMessage,
+        required this.onScaleForLoading,
       });
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -50,7 +56,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted || token != _lifecycleToken) return;
       _safeSetState(apply);
     }
-
     await step(const Duration(milliseconds: 50),  () => _animationEmail = true);
     await step(const Duration(milliseconds: 100), () => _animationPassword = true);
     await step(const Duration(milliseconds: 200), () => _animationTerms = true);
@@ -59,8 +64,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     await step(const Duration(milliseconds: 350), () => _animationAccountLink1 = true);
     await step(const Duration(milliseconds: 400), () => _animationAccountLink2 = true);
     await step(const Duration(milliseconds: 450), () => _animationAccountLink3 = true);
-
   }
+
+  Future<String?> registerWithValidation(
+      BuildContext context,
+      String email,
+      String password,
+      ) async {
+    final isValid = Authentication().checkBeforeSendingRegister(email, password);
+    if (!isValid) {
+      final mess = Authentication().validateInputRegister(email, password);
+      ShowNotification.showAnimatedSnackBar(context, mess, 0, Duration(milliseconds: 500));
+    } else {
+      widget.onScaleForLoading(true);
+      final err = await Authentication().register(email, password);
+      if (err != null) {
+        List<String> message = ['Warning!','$err'];
+        await Future.delayed(const Duration(milliseconds: 1000));
+        setState(() {
+          widget.onStatus(0);
+          widget.onMessage(message);
+        });
+        return err;
+      } else{
+        return null;
+      }
+    }
+  }
+
+
 
   /// Gọi hàm này từ cha
   void cancelNow() {
@@ -92,7 +124,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: 20),
-
           MoveAndFadeContainer(
             fatherHeight: 80,
             fatherWidth: specs.screenWidth,
@@ -199,10 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     await Future.delayed(const Duration(milliseconds: 150));
                     if (!mounted) return;
                     _safeSetState(() => _isTapDown = false);
-                    await Future.delayed(const Duration(milliseconds: 150));
-                    setState(() {
-                      widget.onScaleForLoading(true);
-                    });
+                    registerWithValidation(context,emailController.text, passwordController.text);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),

@@ -10,6 +10,7 @@ class ShowNotification {
       BuildContext context,
       String message,
       int type,
+      Duration duration,
       ) {
     // NẾU ĐANG CÓ THÔNG BÁO -> KHÔNG LÀM GÌ CẢ
     if (_isNotificationVisible) {
@@ -34,12 +35,14 @@ class ShowNotification {
 class _AnimatedSnackBar extends StatefulWidget {
   final String errorMessage;
   final OverlayEntry overlayEntry;
+  final Duration duration;
   final int type;
 
   const _AnimatedSnackBar({
     required this.errorMessage,
     required this.overlayEntry,
     required this.type,
+    this.duration =  const Duration(milliseconds: 500),
   });
 
   @override
@@ -77,7 +80,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
     // để hiệu ứng nảy (bounce) được mượt mà.
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: widget.duration,
     );
 
     // 2. Thiết lập animation trượt xuống (không thay đổi)

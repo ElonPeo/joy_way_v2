@@ -5,17 +5,23 @@ import 'package:joy_way/widgets/animated_container/scale_container.dart';
 import 'package:joy_way/widgets/custom_text_field/custom_text_field.dart';
 
 import '../../../../config/general_specifications.dart';
+import '../../../../services/firebase_services/authentication.dart';
 import '../../../../widgets/animated_container/animated_blur_overlay.dart';
+import '../../../../widgets/notifications/show_notification.dart';
 
 class LoginScreen extends StatefulWidget {
   final int type;
   final Function(int) onChanged;
   final Function(bool) onScaleForLoading;
+  final Function(int) onStatus;
+  final Function(List<String>) onMessage;
 
   const LoginScreen({
     super.key,
     required this.type,
     required this.onChanged,
+    required this.onStatus,
+    required this.onMessage,
     required this.onScaleForLoading,
   });
 
@@ -60,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted || token != _lifecycleToken) return;
       _safeSetState(apply);
     }
+    await const Duration(milliseconds: 200);
     await step(const Duration(milliseconds: 50),  () => _animationEmail = true);
     await step(const Duration(milliseconds: 100), () => _animationPassword = true);
     await step(const Duration(milliseconds: 150), () => _animationRecoveryPassword = true);
@@ -68,6 +75,32 @@ class _LoginScreenState extends State<LoginScreen> {
     await step(const Duration(milliseconds: 300), () => _animationAccountLink1 = true);
     await step(const Duration(milliseconds: 450), () => _animationAccountLink2 = true);
     await step(const Duration(milliseconds: 500), () => _animationAccountLink3 = true);
+  }
+
+  Future<String?> loginWithValidation(
+      BuildContext context,
+      String email,
+      String password,
+      ) async {
+    final isValid = Authentication().checkBeforeSendingSignIn(email, password);
+    if (!isValid) {
+      final mess = Authentication().validateInputSignIn(email, password);
+      ShowNotification.showAnimatedSnackBar(context, mess, 0, Duration(milliseconds: 500));
+    } else {
+      widget.onScaleForLoading(true);
+      await Future.delayed(const Duration(milliseconds: 3000));
+      final err = await Authentication().signIn(email, password);
+      if (err != null) {
+        List<String> message = ['Warning!','$err'];
+        setState(() {
+          widget.onStatus(1);
+          widget.onMessage(message);
+        });
+        return err;
+      } else{
+        return null;
+      }
+    }
   }
 
   @override
@@ -95,7 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: 20),
-
           /// Email
           MoveAndFadeContainer(
             fatherHeight: 80,
@@ -199,10 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     await Future.delayed(const Duration(milliseconds: 150));
                     if (!mounted) return;
                     _safeSetState(() => _isTapDown = false);
-                    await Future.delayed(const Duration(milliseconds: 150));
-                    setState(() {
-                      widget.onScaleForLoading(true);
-                    });
+                    loginWithValidation(context,emailController.text, passwordController.text);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
