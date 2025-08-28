@@ -8,8 +8,10 @@ import 'components/register/register_screen.dart';
 import 'components/status_and_message/status_and_message.dart';
 
 class FoundationOfAuth extends StatefulWidget {
+  final Function(bool) onFinishedAnimation;
   const FoundationOfAuth({
     super.key,
+    required this.onFinishedAnimation,
   });
 
   @override
@@ -43,7 +45,10 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
       case 2:
         return RecoveryScreen(
           hideRecoveryPassword: hideRecoveryPassword,
+          onChanged: (value) => setState(() => type = value),
           onScaleForLoading: (value) => setState(() => scaleForLoading = value),
+          onMessage: (value) => setState(() => messages = value),
+          onStatus: (value) => setState(() => status = value),
         );
       default:
         return LoginScreen(
@@ -114,6 +119,11 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
               onStatus: (value) {
                 setState(() {
                   status = value;
+                });
+              },
+              onFinishedAnimation: (value) {
+                setState(() {
+                   widget.onFinishedAnimation(value);
                 });
               },
             ),

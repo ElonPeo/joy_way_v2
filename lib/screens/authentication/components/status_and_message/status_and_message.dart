@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inner_shadow/flutter_inner_shadow.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/widgets/animated_container/animated_blur_overlay.dart';
-import 'package:joy_way/widgets/animated_container/move_and_fade_container.dart';
 import 'package:joy_way/widgets/animated_icons/loading_rive_icon.dart';
 
 import '../../../../config/general_specifications.dart';
@@ -14,6 +12,7 @@ class StatusAndMessage extends StatefulWidget {
   final List<String> messages;
   final Function(bool) onScaleLoading;
   final Function(int) onStatus;
+  final Function(bool) onFinishedAnimation;
 
   const StatusAndMessage({
     super.key,
@@ -22,6 +21,7 @@ class StatusAndMessage extends StatefulWidget {
     required this.messages,
     required this.onScaleLoading,
     required this.onStatus,
+    required this.onFinishedAnimation,
   });
 
   @override
@@ -70,12 +70,12 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             showAnimatedIcon = true;
           });
         });
-        Future.delayed(const Duration(milliseconds: 1200), () {
+        Future.delayed(const Duration(milliseconds: 1000), () {
           setState(() {
             showTitleLoadingText = true;
           });
         });
-        Future.delayed(const Duration(milliseconds: 1300), () {
+        Future.delayed(const Duration(milliseconds: 1200), () {
           setState(() {
             showSubTitleLoadingText = true;
           });
@@ -167,6 +167,11 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             scaleTheFirstCircle = true;
           });
         });
+        Future.delayed(const Duration(milliseconds: 4000), () {
+          setState(() {
+            widget.onFinishedAnimation(true);
+          });
+        });
       } else if(widget.status == 2){
         setState(() {
           hideTitleLoadingText = true;
@@ -176,8 +181,15 @@ class _StatusAndMessageState extends State<StatusAndMessage>
           hideSubTitleLoadingText = true;
         });
         /// Gửi link lấy lại mật khẩu thành công
+
+        Future.delayed(const Duration(milliseconds: 600), () {
+          setState(() {
+            showTitleMessage = true;
+          });
+        });
         Future.delayed(const Duration(milliseconds: 700), () {
           setState(() {
+            showSubTitleMessage = true;
             activeSuccessful = true;
           });
         });

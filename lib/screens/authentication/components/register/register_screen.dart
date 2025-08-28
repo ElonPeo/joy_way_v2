@@ -71,22 +71,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       String email,
       String password,
       ) async {
+
     final isValid = Authentication().checkBeforeSendingRegister(email, password);
     if (!isValid) {
       final mess = Authentication().validateInputRegister(email, password);
-      ShowNotification.showAnimatedSnackBar(context, mess, 0, Duration(milliseconds: 500));
+      ShowNotification.showAnimatedSnackBar(
+          context, mess, 0, Duration(milliseconds: 300));
     } else {
       widget.onScaleForLoading(true);
+      await Future.delayed(const Duration(milliseconds: 2000));
       final err = await Authentication().register(email, password);
       if (err != null) {
-        List<String> message = ['Warning!','$err'];
-        await Future.delayed(const Duration(milliseconds: 1000));
+        List<String> message = ['Warning!', '$err'];
         setState(() {
           widget.onStatus(0);
           widget.onMessage(message);
         });
         return err;
-      } else{
+      } else {
+        setState(() {
+          List<String> message = ['Congratulations!', 'You have successfully registered.'];
+          widget.onStatus(1);
+          widget.onMessage(message);
+        });
         return null;
       }
     }

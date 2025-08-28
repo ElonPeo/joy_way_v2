@@ -2,17 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/general_specifications.dart';
+import '../../../../services/firebase_services/authentication.dart';
 import '../../../../widgets/animated_container/move_and_fade_container.dart';
 import '../../../../widgets/custom_text_field/custom_text_field.dart';
+import '../../../../widgets/notifications/show_notification.dart';
 
 class RecoveryScreen extends StatefulWidget {
+  final Function(int) onChanged;
   final Function(bool) onScaleForLoading;
+  final Function(int) onStatus;
+  final Function(List<String>) onMessage;
   final bool hideRecoveryPassword;
 
   const RecoveryScreen({
     super.key,
     required this.onScaleForLoading,
     required this.hideRecoveryPassword,
+    required this.onStatus,
+    required this.onMessage,
+    required this.onChanged,
   });
 
   @override
@@ -50,6 +58,39 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
         const Duration(milliseconds: 100), () => animationConfirmButton = true);
     await step(
         const Duration(milliseconds: 150), () => animationInstruct = true);
+  }
+
+  Future<String?> recoveryPassword(
+      BuildContext context,
+      String email,
+
+      ) async {
+
+    final isValid = Authentication().checkBeforeSendingResetPassword(email);
+    if (!isValid) {
+      final mess = Authentication().validateInputResetPassword(email);
+      ShowNotification.showAnimatedSnackBar(
+          context, mess, 0, Duration(milliseconds: 300));
+    } else {
+      widget.onScaleForLoading(true);
+      await Future.delayed(const Duration(milliseconds: 2000));
+      final err = await Authentication().resetPassword(email);
+      if (err != null) {
+        List<String> message = ['Warning!', '$err'];
+        setState(() {
+          widget.onStatus(0);
+          widget.onMessage(message);
+        });
+        return err;
+      } else {
+        setState(() {
+          List<String> message = ['Congratulations!', 'If the email exists, we have sent a password reset link.'];
+          widget.onStatus(2);
+          widget.onMessage(message);
+        });
+        return null;
+      }
+    }
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -130,9 +171,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
                       if (!mounted) return;
                       _safeSetState(() => _isTapDown = false);
                       await Future.delayed(const Duration(milliseconds: 150));
-                      setState(() {
-                        widget.onScaleForLoading(true);
-                      });
+                      recoveryPassword(context,emailController.text);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),

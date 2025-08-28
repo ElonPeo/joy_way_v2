@@ -95,6 +95,7 @@ class Authentication {
     }
   }
 
+
   //---------------------------------------------------------------------------------
   bool checkBeforeSendingResetPassword(String email) {
     return checkNullResetPasswordInput(email) && checkValidEmail(email);

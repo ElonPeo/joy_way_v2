@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:joy_way/screens/authentication/components/recovery/recovery_screen.dart';
 import 'package:joy_way/widgets/animated_container/animated_blur_overlay.dart';
 import 'package:joy_way/widgets/animated_container/move_and_fade_container.dart';
 

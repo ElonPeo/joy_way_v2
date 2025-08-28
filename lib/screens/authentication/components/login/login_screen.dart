@@ -66,38 +66,54 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted || token != _lifecycleToken) return;
       _safeSetState(apply);
     }
+
     await const Duration(milliseconds: 200);
-    await step(const Duration(milliseconds: 50),  () => _animationEmail = true);
-    await step(const Duration(milliseconds: 100), () => _animationPassword = true);
-    await step(const Duration(milliseconds: 150), () => _animationRecoveryPassword = true);
-    await step(const Duration(milliseconds: 200), () => _animationConfirmButton = true);
-    await step(const Duration(milliseconds: 250), () => _animationOrContinueWith = true);
-    await step(const Duration(milliseconds: 300), () => _animationAccountLink1 = true);
-    await step(const Duration(milliseconds: 450), () => _animationAccountLink2 = true);
-    await step(const Duration(milliseconds: 500), () => _animationAccountLink3 = true);
+    await step(const Duration(milliseconds: 50), () => _animationEmail = true);
+    await step(
+        const Duration(milliseconds: 100), () => _animationPassword = true);
+    await step(const Duration(milliseconds: 150),
+        () => _animationRecoveryPassword = true);
+    await step(const Duration(milliseconds: 200),
+        () => _animationConfirmButton = true);
+    await step(const Duration(milliseconds: 250),
+        () => _animationOrContinueWith = true);
+    await step(
+        const Duration(milliseconds: 300), () => _animationAccountLink1 = true);
+    await step(
+        const Duration(milliseconds: 450), () => _animationAccountLink2 = true);
+    await step(
+        const Duration(milliseconds: 500), () => _animationAccountLink3 = true);
   }
 
+  final Authentication auth = Authentication();
   Future<String?> loginWithValidation(
-      BuildContext context,
-      String email,
-      String password,
-      ) async {
-    final isValid = Authentication().checkBeforeSendingSignIn(email, password);
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
+
+    final isValid = auth.checkBeforeSendingSignIn(email, password);
     if (!isValid) {
-      final mess = Authentication().validateInputSignIn(email, password);
-      ShowNotification.showAnimatedSnackBar(context, mess, 0, Duration(milliseconds: 500));
+      final mess = auth.validateInputSignIn(email, password);
+      ShowNotification.showAnimatedSnackBar(
+          context, mess, 0, Duration(milliseconds: 300));
     } else {
       widget.onScaleForLoading(true);
-      await Future.delayed(const Duration(milliseconds: 3000));
-      final err = await Authentication().signIn(email, password);
+      await Future.delayed(const Duration(milliseconds: 2000));
+      final err = await auth.signIn(email, password);
       if (err != null) {
-        List<String> message = ['Warning!','$err'];
+        List<String> message = ['Warning!', '$err'];
         setState(() {
-          widget.onStatus(1);
+          widget.onStatus(0);
           widget.onMessage(message);
         });
         return err;
-      } else{
+      } else {
+        setState(() {
+          List<String> message = ['Congratulations!', 'You have logged in successfully.'];
+          widget.onStatus(1);
+          widget.onMessage(message);
+        });
         return null;
       }
     }
@@ -128,6 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: 20),
+
           /// Email
           MoveAndFadeContainer(
             fatherHeight: 80,
@@ -172,38 +189,44 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
 
           /// Recovery
-          GestureDetector(
-            onTap: () => widget.onChanged(2),
-            child: MoveAndFadeContainer(
-              fatherHeight: 40,
-              fatherWidth: specs.screenWidth,
-              heightOfChild: 20,
-              widthOfChild: specs.screenWidth - padding,
-              animation: _animationRecoveryPassword,
-              curve: _curves,
-              customizeTravelDistance: true,
-              duration: _duration,
-              type: 2,
-              start: 30,
-              end: 5,
-              child: SizedBox(
+          MoveAndFadeContainer(
+            fatherHeight: 40,
+            fatherWidth: specs.screenWidth,
+            heightOfChild: 20,
+            widthOfChild: specs.screenWidth - padding,
+            animation: _animationRecoveryPassword,
+            curve: _curves,
+            customizeTravelDistance: true,
+            duration: _duration,
+            type: 2,
+            start: 30,
+            end: 5,
+              child: Container(
                 height: 20,
                 width: specs.screenWidth - padding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      "Recovery Password",
-                      style: GoogleFonts.outfit(
-                        color: specs.pantoneColor3,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                    GestureDetector(
+                      onTap: () => widget.onChanged(2),
+                      child: Container(
+                        width: 150,
+                        height: 20,
+                        child: Text(
+                          "Recovery Password",
+                          textAlign: TextAlign.right,
+                          style: GoogleFonts.outfit(
+                            color: specs.pantoneColor3,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+
           ),
 
           /// Confirm
@@ -231,7 +254,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     await Future.delayed(const Duration(milliseconds: 150));
                     if (!mounted) return;
                     _safeSetState(() => _isTapDown = false);
-                    loginWithValidation(context,emailController.text, passwordController.text);
+                    loginWithValidation(
+                        context, emailController.text, passwordController.text);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
@@ -245,7 +269,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: specs.pantoneShadow2,
                           spreadRadius: 5,
                           blurRadius: 10,
-                          offset: _isTapDown ? const Offset(0, 0) : const Offset(0, 10),
+                          offset: _isTapDown
+                              ? const Offset(0, 0)
+                              : const Offset(0, 10),
                         ),
                       ],
                     ),
@@ -303,7 +329,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Center(
                     child: Text(
                       "Or",
-                      style: GoogleFonts.outfit(fontSize: 12, color: specs.black150),
+                      style: GoogleFonts.outfit(
+                          fontSize: 12, color: specs.black150),
                     ),
                   ),
                 ),
@@ -351,15 +378,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       behavior: HitTestBehavior.opaque,
                       onTap: () {},
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          border: Border.all(color: specs.black240, width: 1.5, style: BorderStyle.solid),
+                          border: Border.all(
+                              color: specs.black240,
+                              width: 1.5,
+                              style: BorderStyle.solid),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: SizedBox(
                           width: 30,
                           height: 30,
-                          child: Image.asset('assets/icons/account_link/google.png', fit: BoxFit.fill),
+                          child: Image.asset(
+                              'assets/icons/account_link/google.png',
+                              fit: BoxFit.fill),
                         ),
                       ),
                     ),
@@ -374,15 +407,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       behavior: HitTestBehavior.opaque,
                       onTap: () {},
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          border: Border.all(color: specs.black240, width: 1.5, style: BorderStyle.solid),
+                          border: Border.all(
+                              color: specs.black240,
+                              width: 1.5,
+                              style: BorderStyle.solid),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: SizedBox(
                           width: 30,
                           height: 30,
-                          child: Image.asset('assets/icons/account_link/facebook.png', fit: BoxFit.fill),
+                          child: Image.asset(
+                              'assets/icons/account_link/facebook.png',
+                              fit: BoxFit.fill),
                         ),
                       ),
                     ),
@@ -397,15 +436,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       behavior: HitTestBehavior.opaque,
                       onTap: () {},
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          border: Border.all(color: specs.black240, width: 1.5, style: BorderStyle.solid),
+                          border: Border.all(
+                              color: specs.black240,
+                              width: 1.5,
+                              style: BorderStyle.solid),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: SizedBox(
                           width: 30,
                           height: 30,
-                          child: Image.asset('assets/icons/account_link/apple.png', fit: BoxFit.fill),
+                          child: Image.asset(
+                              'assets/icons/account_link/apple.png',
+                              fit: BoxFit.fill),
                         ),
                       ),
                     ),
