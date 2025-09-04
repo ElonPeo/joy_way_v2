@@ -70,7 +70,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     if (!isValid) {
       final mess = Authentication().validateInputResetPassword(email);
       ShowNotification.showAnimatedSnackBar(
-          context, mess, 0, Duration(milliseconds: 300));
+          context, mess, 0, const Duration(milliseconds: 300));
     } else {
       widget.onScaleForLoading(true);
       await Future.delayed(const Duration(milliseconds: 2000));
@@ -122,7 +122,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
         height: specs.screenHeight * 0.7,
         width: specs.screenWidth,
         child: ListView(
-          padding: EdgeInsets.all(0),
+          padding: const EdgeInsets.all(0),
           children: [
 
             /// Email

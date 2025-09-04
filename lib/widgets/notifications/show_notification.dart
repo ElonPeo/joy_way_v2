@@ -56,11 +56,11 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
   late final Animation<double> _scaleAnimation;
   final GlobalKey _snackBarKey = GlobalKey();
 
-  List<Color> _colorListBackground = [
-    Color.fromRGBO(217, 22, 86, 1),
-    Color.fromRGBO(232, 123, 64, 1),
-    Color.fromRGBO(74, 98, 138, 1),
-    Color.fromRGBO(152, 205, 126, 1),
+  final List<Color> _colorListBackground = [
+    const Color.fromRGBO(217, 22, 86, 1),
+    const Color.fromRGBO(232, 123, 64, 1),
+    const Color.fromRGBO(74, 98, 138, 1),
+    const Color.fromRGBO(152, 205, 126, 1),
   ];
 
 
@@ -138,9 +138,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Positioned(
       top: 15,

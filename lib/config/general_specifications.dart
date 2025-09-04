@@ -8,6 +8,7 @@ class GeneralSpecifications {
   final Color pantoneColor;
   final Color pantoneColor2;
   final Color pantoneColor3;
+  final Color pantoneColor4;
   final Color pantoneShadow;
   final Color pantoneShadow2;
   final Color startLocation;
@@ -37,6 +38,8 @@ class GeneralSpecifications {
         pantoneColor2 = const Color.fromRGBO(44, 122, 84, 1),
         // #6E947C
         pantoneColor3 = const Color.fromRGBO(102, 136, 115, 1),
+
+        pantoneColor4 = const Color.fromRGBO(40, 67, 43, 1),
         // #2C98A0
         turquoise1 = const Color.fromRGBO(44, 152, 160, 1),
         // #38B2A3

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:joy_way/screens/authentication/foudation_of_auth.dart';
+import 'package:joy_way/screens/authentication/foundation_of_auth.dart';
 import 'package:joy_way/screens/home/foundation_of_home.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -11,7 +11,7 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  bool finishAnimation = false;
+  bool finishAnimation = true;
 
   @override
   Widget build(BuildContext context) {

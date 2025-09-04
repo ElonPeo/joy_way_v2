@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:joy_way/services/firebase_services/authentication.dart';
+import 'package:joy_way/screens/home/bottom_bar.dart';
 import '../../config/general_specifications.dart';
 
 class FoundationOfHome extends StatefulWidget {
@@ -15,23 +15,34 @@ class FoundationOfHome extends StatefulWidget {
 }
 
 class _FoundationOfHomeState extends State<FoundationOfHome> {
+  int page = 0;
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
     return Material(
-      color: Colors.white,
+      color: Colors.white70,
       child: Stack(
         children: [
-          Text('soiwfghujonw dingvhu owdhug owieudfgoedugf'),
           IconButton(
-              onPressed: () async {
-                await widget.onFinishedAnimation(false);
-                Authentication().signOut();
-              },
-              icon: Icon(
-                Icons.abc,
-                size: 100,
-              )),
+            onPressed: () {
+              // widget.onFinishedAnimation(false);
+              // Authentication().signOut();
+              setState(() {
+                page = 1;
+              });
+            },
+            icon: Icon(
+              Icons.abc,
+              size: 100,
+            ),
+          ),
+          Positioned(bottom: 0, child: BottomBar(
+            page: page,
+            onPage: (value) {
+              setState(() => page = value);
+            },
+          )),
         ],
       ),
     );

@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-    return Container(
+    return SizedBox(
       height: specs.screenHeight * 0.7 - 70,
       width: specs.screenWidth,
       child: ListView(
@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
             type: 2,
             start: 30,
             end: 5,
-              child: Container(
+              child: SizedBox(
                 height: 20,
                 width: specs.screenWidth - padding,
                 child: Row(
@@ -209,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => widget.onChanged(2),
-                      child: Container(
+                      child: SizedBox(
                         width: 150,
                         height: 20,
                         child: Text(

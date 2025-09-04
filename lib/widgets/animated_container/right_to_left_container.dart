@@ -28,7 +28,7 @@ class _RightToLeftContainerState extends State<RightToLeftContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: widget.fatherHeight,
       width: widget.fatherWidth,
       child: Stack(

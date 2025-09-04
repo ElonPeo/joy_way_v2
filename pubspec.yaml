@@ -76,6 +76,7 @@ flutter:
     - assets/icons/
     - assets/icons/authentication/
     - assets/icons/account_link/
+    - assets/icons/bottom_bar/
     - assets/notification_bg/
     - assets/videos/
 

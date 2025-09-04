@@ -251,7 +251,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
           Positioned(
             top: (specs.screenHeight - 300) / 2 - 80,
             left: (specs.screenWidth - 300) / 2,
-            child: Container(
+            child: SizedBox(
                 height: 300,
                 width: 300,
                 child: Stack(
@@ -264,7 +264,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                         curve: Curves.easeInOutBack,
                         duration: const Duration(milliseconds: 1000),
                         scale: fadeInCircle ? 1 : 1.6,
-                        child: Container(
+                        child: SizedBox(
                           height: 230,
                           width: 230,
                           child: Stack(
@@ -367,16 +367,16 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                               ),
                               AnimatedScale(
                                 scale: showAnimatedIcon ? 1 : 0.8,
-                                duration: Duration(milliseconds: 100),
+                                duration: const Duration(milliseconds: 100),
                                 child: AnimatedOpacity(
                                   opacity: showAnimatedIcon ? 1 : 0,
-                                  duration: Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 300),
                                   child: Center(
                                       child: Container(
                                     height: 200,
                                     width: 100,
                                     decoration: BoxDecoration(
-                                      color: Color.fromRGBO(240, 240, 240, 0.5),
+                                      color: const Color.fromRGBO(240, 240, 240, 0.5),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: Colors.white,
@@ -395,7 +395,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                                               activeFail: activeFail,
                                             ),
                                           )
-                                        : SizedBox(),
+                                        : const SizedBox(),
                                   )),
                                 ),
                               )
@@ -411,8 +411,8 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             top: (specs.screenHeight + 50) / 2,
             child: AnimatedOpacity(
               opacity: showTitleLoadingText ? 1 : 0,
-              duration: Duration(milliseconds: 500),
-              child: Container(
+              duration: const Duration(milliseconds: 500),
+              child: SizedBox(
                 height: 100,
                 width: specs.screenWidth,
                 child: Stack(
@@ -426,7 +426,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                         left: (specs.screenWidth - 100) / 2,
                         duration: const Duration(milliseconds: 1000),
                         curve: Curves.easeOutCirc,
-                        child: Container(
+                        child: SizedBox(
                             height: 35,
                             width: 100,
                             child: Center(
@@ -448,7 +448,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             child: AnimatedOpacity(
               opacity: showSubTitleLoadingText ? 1 : 0,
               duration: const Duration(milliseconds: 500),
-              child: Container(
+              child: SizedBox(
                 height: 200,
                 width: specs.screenWidth,
                 child: Stack(
@@ -463,7 +463,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                         duration: const Duration(milliseconds: 1000),
                         child: Container(
                             width: specs.screenWidth,
-                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Center(
                               child: Text(
                                 'We are processing your request.',
@@ -485,15 +485,15 @@ class _StatusAndMessageState extends State<StatusAndMessage>
               fatherHeight: 100,
               fatherWidth: specs.screenWidth,
               animation: !showAnimatedIcon,
-              duration: Duration(milliseconds: 700),
+              duration: const Duration(milliseconds: 700),
               fadeIn: true,
               child: AnimatedBlurOverlay(
                 fatherHeight: 100,
                 fatherWidth: specs.screenWidth,
                 animation: showTitleMessage,
-                duration: Duration(milliseconds: 700),
+                duration: const Duration(milliseconds: 700),
                 fadeIn: false,
-                child: Container(
+                child: SizedBox(
                   height: 100,
                   width: specs.screenWidth,
                   child: Stack(
@@ -503,7 +503,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                           left: 0,
                           duration: const Duration(milliseconds: 1000),
                           curve: Curves.easeOutCirc,
-                          child: Container(
+                          child: SizedBox(
                               height: 35,
                               width: specs.screenWidth,
                               child: Center(
@@ -528,15 +528,15 @@ class _StatusAndMessageState extends State<StatusAndMessage>
               animation: !showAnimatedIcon,
               fatherHeight: 200,
               fatherWidth: specs.screenWidth,
-              duration: Duration(milliseconds: 700),
+              duration: const Duration(milliseconds: 700),
               fadeIn: true,
               child: AnimatedBlurOverlay(
                 animation: showSubTitleMessage,
                 fatherHeight: 200,
                 fatherWidth: specs.screenWidth,
-                duration: Duration(milliseconds: 700),
+                duration: const Duration(milliseconds: 700),
                 fadeIn: false,
-                child: Container(
+                child: SizedBox(
                   height: 200,
                   width: specs.screenWidth,
                   child: Stack(
@@ -547,7 +547,7 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                           duration: const Duration(milliseconds: 1000),
                           child: Container(
                               width: specs.screenWidth,
-                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
                               child: Center(
                                 child: Text(
                                   widget.messages[1],
@@ -565,12 +565,12 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             ),
           ),
           AnimatedPositioned(
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             bottom: showReturnButton ? 20 : -100,
             left: 20,
             child: AnimatedScale(
               scale: _isTapDown ? 0.9 : 1,
-              duration: Duration(milliseconds: 150),
+              duration: const Duration(milliseconds: 150),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown: (details) async {
