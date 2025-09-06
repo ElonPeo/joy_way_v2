@@ -6,10 +6,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-    return Scaffold(
-      body: Container(
-
-      ),
+    return Container(
+      height: specs.screenHeight,
+      width: specs.screenWidth,
+      color: Colors.red,
     );
   }
 }

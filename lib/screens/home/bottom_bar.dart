@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/animated_blur_overlay.dart';
 
 import '../../config/general_specifications.dart';
 
@@ -30,7 +31,13 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
     'assets/icons/bottom_bar/beacon.png',
     'assets/icons/bottom_bar/user.png'
   ];
-  final List<String> _titlePage = ['Home', 'Notify', 'Journey', 'Message', 'Profile'];
+  final List<String> _titlePage = [
+    'Home',
+    'Notify',
+    'Journey',
+    'Message',
+    'Profile'
+  ];
 
   final List<GlobalKey> _itemKeys = List.generate(5, (_) => GlobalKey());
   final List<double> _itemLeft = List.filled(5, 20);
@@ -88,14 +95,14 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
       child: Stack(
         children: [
           AnimatedPositioned(
-              duration: Duration(milliseconds: 700),
+              duration: const Duration(milliseconds: 700),
               curve: Curves.easeOutCirc,
               left: _itemLeft[_animIndex],
               bottom: 37,
               child: Container(
                 height: 55,
                 width: 55,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
                 ),
@@ -177,7 +184,7 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
           Positioned(
             bottom: 0,
             child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 height: BottomBar.kHeight,
                 width: MediaQuery.of(context).size.width,
                 child: Row(
@@ -199,11 +206,11 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                           child: Stack(
                             children: [
                               AnimatedPositioned(
-                                duration: Duration(milliseconds: 200),
+                                duration: const Duration(milliseconds: 200),
                                 left: 16.5,
-                                top: _animIndex == index ? 0 : 10,
+                                top: _animIndex == index ? 0 : 19,
                                 child: AnimatedOpacity(
-                                  duration: Duration(milliseconds: 200),
+                                  duration: const Duration(milliseconds: 200),
                                   opacity: _animIndex == index ? 0 : 1,
                                   child: ImageIcon(
                                     AssetImage("${_iconAssets[index]}"),
@@ -218,17 +225,17 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                                 bottom: 10,
                                 child: SizedBox(
                                   width: 55,
-                                  child: Text(
-                                    _titlePage[index],
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.outfit(
-                                      fontSize: _animIndex == index ? 13 : 12,
-                                      fontWeight: _animIndex == index
-                                          ? FontWeight.w500
-                                          : FontWeight.w400 ,
-                                      color: _animIndex == index
-                                          ? specs.pantoneColor4
-                                          : specs.black150,
+                                  child: AnimatedOpacity(
+                                    duration: Duration(milliseconds: 200),
+                                    opacity: _animIndex == index ? 1 : 0,
+                                    child: Text(
+                                      _titlePage[index],
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: specs.pantoneColor4,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -331,17 +338,18 @@ class AppBarPainter extends CustomPainter {
   }
 }
 
-
 class _DotIcon extends StatelessWidget {
   final String asset;
+
   const _DotIcon({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 25, height: 25,
-      child: ImageIcon(AssetImage(asset), size: 25, color: const Color.fromRGBO(40, 67, 43, 1)),
+      width: 25,
+      height: 25,
+      child: ImageIcon(AssetImage(asset),
+          size: 25, color: const Color.fromRGBO(40, 67, 43, 1)),
     );
   }
 }
-
