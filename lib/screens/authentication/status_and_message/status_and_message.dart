@@ -12,7 +12,7 @@ class StatusAndMessage extends StatefulWidget {
   final List<String> messages;
   final Function(bool) onScaleLoading;
   final Function(int) onStatus;
-  final Function(bool) onFinishedAnimation;
+
 
   const StatusAndMessage({
     super.key,
@@ -21,7 +21,7 @@ class StatusAndMessage extends StatefulWidget {
     required this.messages,
     required this.onScaleLoading,
     required this.onStatus,
-    required this.onFinishedAnimation,
+
   });
 
   @override
@@ -167,11 +167,11 @@ class _StatusAndMessageState extends State<StatusAndMessage>
             scaleTheFirstCircle = true;
           });
         });
-        Future.delayed(const Duration(milliseconds: 4000), () {
-          setState(() {
-            widget.onFinishedAnimation(true);
-          });
+
+        Future.delayed(const Duration(milliseconds: 4200), () {
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
         });
+
       } else if(widget.status == 2){
         setState(() {
           hideTitleLoadingText = true;

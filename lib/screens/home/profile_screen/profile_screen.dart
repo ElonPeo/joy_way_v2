@@ -1,14 +1,16 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/screens/home/profile_screen/follow_button.dart';
 import 'package:joy_way/screens/home/profile_screen/middle_navigation_bar.dart';
+import 'package:joy_way/screens/home/profile_screen/setting_button/setting_button.dart';
 import '../../../config/general_specifications.dart';
 import 'dart:ui' show ImageFilter;
 
 class ProfileScreen extends StatefulWidget {
   final bool isOwnerProfile;
 
-  const ProfileScreen({super.key, this.isOwnerProfile = false});
+  const ProfileScreen({super.key, this.isOwnerProfile = true});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -37,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 // Hằng số cho hiệu ứng khi cuộn
   static const double _kStart = 0.0;
   static const double _kEnd = 80.0;
+  static const double _kStart2 = 80;
   static const double _kEnd1 = 160.0;
 
   static const double _kR0 = 40.0;
@@ -71,7 +74,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (end == start) return 0.0;
     return ((value - start) / (end - start)).clamp(0.0, 1.0);
   }
+
   double _ease(double t) => Curves.easeOut.transform(t);
+
   ({double height, double radius, double blurSigma}) _calcBackground(double y) {
     final double newHeight = (y <= _kStart)
         ? _kH0
@@ -83,17 +88,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final double newSigma = _kBlur0 * t;
     return (height: newHeight, radius: newRadius, blurSigma: newSigma);
   }
+
   ({double pos, double radius, double margin}) _calcMiddleBar(double y) {
     final double newPos = (y <= _kStart)
         ? _kH1
         : (y >= _kEnd1)
             ? _kHMin
             : _kH1 - (y - _kStart);
-    final t1 = _ease(_progress(y, _kStart, _kEnd1));
+    final t1 = _ease(_progress(y, _kStart2, _kEnd1));
     final double newRadius = _kR1 * (1.0 - t1);
     final double newMargin = _kR0 * (1.0 - t1);
     return (pos: newPos, radius: newRadius, margin: newMargin);
   }
+
   bool _shouldRebuild(
     ({double height, double radius, double blurSigma}) bg,
     ({double pos, double radius, double margin}) mid,
@@ -292,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: specs.screenWidth,
                       color: Colors.black.withOpacity(0.6),
                       padding: const EdgeInsets.only(
-                          top: 120, left: 20, right: 20, bottom: 20),
+                          top: 110, left: 20, right: 20, bottom: 20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -349,11 +356,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         )),
                                   ],
                                 ),
-                              )
+                              ),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Row(
                                 children: [
@@ -375,25 +383,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ],
                               ),
-                              Container(
-                                height: 30,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Follow",
-                                    style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 12,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                              )
+                              widget.isOwnerProfile
+                                  ? SettingButton()
+                                  : FollowButton(),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),

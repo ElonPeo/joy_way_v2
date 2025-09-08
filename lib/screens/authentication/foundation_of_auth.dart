@@ -9,10 +9,10 @@ import 'login/login_screen.dart';
 
 
 class FoundationOfAuth extends StatefulWidget {
-  final Function(bool) onFinishedAnimation;
+
   const FoundationOfAuth({
     super.key,
-    required this.onFinishedAnimation,
+
   });
 
   @override
@@ -71,13 +71,6 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.onFinishedAnimation(false);
-    });
-  }
 
 
   @override
@@ -123,21 +116,11 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
               messages: messages,
               status: status,
               onScaleLoading: (value) {
-                if (value && mounted) {
-                  widget.onFinishedAnimation(false);
-                }
                 setState(() => scaleForLoading = value);
               },
               onStatus: (value) => setState(() => status = value),
-              onFinishedAnimation: (value) {
-                if (mounted) {
-                  setState(() {
-                    widget.onFinishedAnimation(value);
-                  });
-                }
-              },
             ),
-
+            // Title
             AnimatedPositioned(
               top: targetTop,
               duration: animDuration,
@@ -154,6 +137,7 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
                 ),
               ),
             ),
+            // Main content
             AnimatedPositioned(
               top: targetBottom,
               duration: const Duration(milliseconds: 1000),
@@ -175,6 +159,7 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
                   ),
                   child: Stack(
                     children: [
+                      // Nút đổi trang
                       Positioned(
                         top: 0,
                         left: 20,

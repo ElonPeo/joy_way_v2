@@ -28,6 +28,11 @@ class GeneralSpecifications {
   final Color turquoise5;
   final Color turquoise6;
 
+  final Color rBlushPink;
+  final Color rSlight;
+  final Color rDark;
+
+
   GeneralSpecifications(BuildContext context)
       : screenHeight = MediaQuery.of(context).size.height,
         screenWidth = MediaQuery.of(context).size.width,
@@ -52,6 +57,15 @@ class GeneralSpecifications {
         turquoise5 = const Color.fromRGBO(136, 232, 172, 1),
         // #B0F2BC
         turquoise6 = const Color.fromRGBO(176, 242, 188, 1),
+
+        // F7CAC9
+        rBlushPink = const Color.fromRGBO(247, 202, 201, 1),
+        // F75270
+        rSlight = const Color.fromRGBO(247, 82, 112, 1),
+        // DC143C
+        rDark = const Color.fromRGBO(220, 20, 60, 1),
+
+
         black80 = const Color.fromRGBO(80, 80, 80, 1),
         black100 = const Color.fromRGBO(100, 100, 100, 1),
         black150 = const Color.fromRGBO(150, 150, 150, 1),

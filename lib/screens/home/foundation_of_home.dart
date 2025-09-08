@@ -8,9 +8,7 @@ import 'package:joy_way/screens/home/profile_screen/profile_screen.dart';
 import '../../config/general_specifications.dart';
 
 class FoundationOfHome extends StatefulWidget {
-  final Function(bool) onFinishedAnimation;
-  const FoundationOfHome({super.key, required this.onFinishedAnimation});
-
+  const FoundationOfHome({super.key});
   @override
   State<FoundationOfHome> createState() => _FoundationOfHomeState();
 }

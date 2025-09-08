@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:joy_way/AuthWrapper.dart';
+import 'package:joy_way/screens/authentication/foundation_of_auth.dart';
+import 'package:joy_way/screens/home/foundation_of_home.dart';
 import 'config/theme.dart';
 import 'firebase_options.dart';
 
@@ -12,6 +14,7 @@ void main() async {
   runApp(const MyApp());
 }
 
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -21,6 +24,11 @@ class MyApp extends StatelessWidget {
       title: 'Auth App',
       theme: AppTheme.themeData,
       home: const AuthWrapper(),
+      routes: {
+        '/auth': (context) => const FoundationOfAuth(),
+        '/home': (context) => const FoundationOfHome(),
+      },
     );
   }
+
 }

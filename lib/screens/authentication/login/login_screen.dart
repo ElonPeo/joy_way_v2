@@ -117,6 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return null;
       }
     }
+    return null;
   }
 
   @override
