@@ -7,9 +7,12 @@ class AnimatedButton extends StatefulWidget {
   final String text;
   final double fontSize;
   final Color textColor;
+  final FontWeight fontWeight;
   final Color color;
   final Color shadowColor;
+
   final VoidCallback? onTap;
+
 
   const AnimatedButton({
     super.key,
@@ -18,6 +21,7 @@ class AnimatedButton extends StatefulWidget {
     required this.text,
     this.fontSize = 10,
     this.textColor = Colors.white,
+    this.fontWeight = FontWeight.w400,
     this.color = const Color.fromRGBO(40, 67, 43, 1),
     this.shadowColor = const Color.fromRGBO(52, 147, 100, 0.15),
     this.onTap,
@@ -87,7 +91,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
                   child: Text(
                     widget.text,
                     style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w400,
+                      fontWeight: widget.fontWeight,
                       fontSize: widget.fontSize,
                       color: widget.textColor,
                     ),

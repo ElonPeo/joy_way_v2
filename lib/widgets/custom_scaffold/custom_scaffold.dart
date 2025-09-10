@@ -1,16 +1,18 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart'; // để dùng ScrollDirection
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/animated_button.dart';
 import '../../config/general_specifications.dart';
 import 'package:joy_way/widgets/animated_container/animated_icon_button.dart';
 
 class CustomScaffold extends StatefulWidget {
   final String title;
+  final Color backgroundColor;
   final List<Widget> children;
-  const CustomScaffold({super.key, required this.title, required this.children});
+  final Future<void> Function()? onConfirm;
+  const CustomScaffold({super.key, this.onConfirm, required this.title, required this.children, this.backgroundColor = Colors.white });
 
   @override
   State<CustomScaffold> createState() => _CustomScaffoldState();
@@ -116,7 +118,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
     return Scaffold(
-      backgroundColor: specs.pantoneShadow2,
+      backgroundColor: widget.backgroundColor,
       body: NotificationListener<ScrollNotification>(
         onNotification: (n) {
           if (n is UserScrollNotification &&
@@ -144,7 +146,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Text(
                             widget.title,
                             style: GoogleFonts.outfit(
@@ -170,69 +172,75 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                   bottomLeft: Radius.circular(15),
                   bottomRight: Radius.circular(15),
                 ),
-                child: SizedBox(
-                  height: 90,
-                  width: specs.screenWidth,
-                  child: Stack(
-                    children: [
-                      Container(
-                        height: 90,
-                        width: specs.screenWidth,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                      BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          height: 90,
-                          width: specs.screenWidth,
-                          padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              AnimatedIconButton(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
-                                height: 30,
-                                width: 20,
-                                color: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                child: SizedBox(
-                                  height: 23,
-                                  width: 23,
-                                  child: Image.asset(
-                                      "assets/icons/other_icons/angle-left.png"),
-                                ),
-                              ),
-                              AnimatedOpacity(
-                                duration: const Duration(milliseconds: 0),
-                                opacity: _opacity2,
-                                child: SizedBox(
-                                  height: 30,
-                                  width: specs.screenWidth - 100,
-                                  child: Center(
-                                    child: Text(
-                                      widget.title,
-                                      style: GoogleFonts.outfit(
-                                          color: Colors.black,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 30, width: 10),
-                            ],
+                clipBehavior: Clip.hardEdge, // << quan trọng: KHÔNG dùng WithSaveLayer
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: 90,
+                    width: specs.screenWidth,
+                    color: Colors.white.withOpacity(0.6), // phủ mờ bên TRONG BackdropFilter
+                    padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          width: 50,
+                          child: AnimatedIconButton(
+                            onTap: () => Navigator.pop(context),
+                            height: 30,
+                            width: 20,
+                            color: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            child: SizedBox(
+                              height: 23, width: 23,
+                              child: Image.asset("assets/icons/other_icons/angle-left.png"),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 0),
+                          opacity: _opacity2,
+                          child: SizedBox(
+                            height: 30,
+                            width: specs.screenWidth - 130,
+                            child: Center(
+                              child: Text(
+                                widget.title,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        widget.onConfirm != null ?
+                        AnimatedButton(
+                            height: 30,
+                            width: 40,
+                            text: "Save",
+                          fontSize: 18,
+                          color: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          textColor: specs.pantoneColor4,
+                          fontWeight: FontWeight.w500,
+                          onTap: () async {
+                            if (widget.onConfirm != null) {
+                              await widget.onConfirm!.call();
+                            }
+                          },
+                        ) : const SizedBox(
+                          width: 40,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
+
           ],
         ),
       ),

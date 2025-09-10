@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:joy_way/screens/setting/edit_profile.dart';
 import 'package:joy_way/screens/setting/setting_and_privacy.dart';
 import 'package:joy_way/widgets/ShowGeneralDialog.dart';
 import 'package:joy_way/widgets/animated_container/animated_icon_button.dart';
 import 'package:joy_way/widgets/animated_container/flashing_container.dart';
 
 import '../../../../config/general_specifications.dart';
+import '../../../setting/edit_profile/edit_profile.dart';
 
 class SettingButton extends StatefulWidget {
   const SettingButton({super.key});
@@ -103,13 +103,6 @@ class _SettingButtonState extends State<SettingButton> {
                       ),
                       FlashingContainer(
                         onTap: (){
-                          ShowGeneralDialog.General_Dialog(
-                              context: context,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOutQuart,
-                              beginOffset: const Offset(1, 0),
-                              child: const EditProfile()
-                          );
                         },
                         height: 50,
                         width: specs.screenWidth,

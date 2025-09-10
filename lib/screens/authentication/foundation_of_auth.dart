@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:joy_way/screens/authentication/recovery/recovery_screen.dart';
-import 'package:joy_way/screens/authentication/register/register_screen.dart';
-import 'package:joy_way/screens/authentication/status_and_message/status_and_message.dart';
+
 import '../../config/general_specifications.dart';
 import 'auth_title.dart';
-import 'login/login_screen.dart';
+import 'components/login_screen.dart';
+import 'components/recovery_screen.dart';
+import 'components/register_screen.dart';
+import 'components/status_and_message.dart';
+
 
 
 class FoundationOfAuth extends StatefulWidget {

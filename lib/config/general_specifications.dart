@@ -14,6 +14,8 @@ class GeneralSpecifications {
   final Color startLocation;
   final Color endLocation;
 
+  final Color backgroundColor;
+
   final Color time;
   final Color black80;
   final Color black100;
@@ -73,6 +75,7 @@ class GeneralSpecifications {
         black240 = const Color.fromRGBO(240, 240, 240, 1),
         pantoneShadow = const Color.fromRGBO(52, 147, 100, 0.15),
         pantoneShadow2 = const Color.fromRGBO(227, 232, 229, 1),
+        backgroundColor =const Color.fromRGBO(245, 245, 245, 1),
         startLocation = const Color.fromRGBO(255, 79, 15, 1),
         endLocation = const Color.fromRGBO(255, 166, 115, 1),
         time = const Color.fromRGBO(3, 166, 161, 1);

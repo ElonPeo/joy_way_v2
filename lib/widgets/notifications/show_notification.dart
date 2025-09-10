@@ -32,6 +32,8 @@ class ShowNotification {
     Overlay.of(context)?.insert(overlayEntry);
   }
 }
+
+
 class _AnimatedSnackBar extends StatefulWidget {
   final String errorMessage;
   final OverlayEntry overlayEntry;
@@ -76,8 +78,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
   void initState() {
     super.initState();
 
-    // 1. Khởi tạo AnimationController với thời gian dài hơn một chút
-    // để hiệu ứng nảy (bounce) được mượt mà.
+    // 1. Khởi tạo AnimationController
     _controller = AnimationController(
       vsync: this,
       duration: widget.duration,
