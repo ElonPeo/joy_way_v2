@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../config/general_specifications.dart';
 import '../../../../services/firebase_services/authentication.dart';
 import '../../../../widgets/animated_container/move_and_fade_container.dart';
-import '../../../../widgets/custom_text_field/custom_text_field.dart';
 import '../../../../widgets/notifications/show_notification.dart';
+import '../../../widgets/custom_input/custom_text_field.dart';
 
 class RecoveryScreen extends StatefulWidget {
   final Function(int) onChanged;

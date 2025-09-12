@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/widgets/animated_container/move_and_fade_container.dart';
 import 'package:joy_way/widgets/animated_container/scale_container.dart';
-import 'package:joy_way/widgets/custom_text_field/custom_text_field.dart';
 
 import '../../../../config/general_specifications.dart';
 import '../../../../services/firebase_services/authentication.dart';
 import '../../../../widgets/animated_container/animated_blur_overlay.dart';
 import '../../../../widgets/notifications/show_notification.dart';
+import '../../../widgets/custom_input/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   final int type;

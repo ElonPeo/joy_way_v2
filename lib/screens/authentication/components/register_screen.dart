@@ -7,7 +7,7 @@ import '../../../../config/general_specifications.dart';
 import '../../../../widgets/animated_container/animated_blur_overlay.dart';
 import '../../../../widgets/animated_container/move_and_fade_container.dart';
 import '../../../../widgets/animated_container/scale_container.dart';
-import '../../../../widgets/custom_text_field/custom_text_field.dart';
+import '../../../widgets/custom_input/custom_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   final Function(int) onStatus;
@@ -25,6 +25,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   static const double padding = 40.0;
+  bool _submitting = false;
   Curve _curves = Curves.easeOutBack;
   Duration _duration = const Duration(milliseconds: 800);
 
@@ -232,12 +233,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapDown: (details) async {
-                    if (!mounted) return;
+                    if (!mounted || _submitting) return;
+                    _submitting = true;
+
                     _safeSetState(() => _isTapDown = true);
                     await Future.delayed(const Duration(milliseconds: 150));
-                    if (!mounted) return;
+                    if (!mounted) { _submitting = false; return; }
                     _safeSetState(() => _isTapDown = false);
-                    registerWithValidation(context,emailController.text, passwordController.text);
+
+                    // 👇 NHỚ await
+                    await registerWithValidation(context, emailController.text, passwordController.text);
+
+                    _submitting = false;
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),

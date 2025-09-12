@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/general_specifications.dart';
 import '../../../../widgets/animated_container/flashing_container.dart';
-import '../../../../widgets/custom_text_field/custome_select.dart';
+import '../../../../widgets/custom_input/custom_select.dart';
+
 
 
 class ChooseGender extends StatefulWidget{
@@ -36,7 +36,7 @@ class _ChooseGenderState extends State<ChooseGender> {
                   fontSize: 14, color: specs.black100),
             ),
           ),
-          CustomeSelect(
+          CustomSelect(
               child: SizedBox(
                   width: specs.screenWidth * 0.55 - 10,
                   height: 30,
@@ -52,7 +52,7 @@ class _ChooseGenderState extends State<ChooseGender> {
                           fontWeight: FontWeight.w500,
                           color: (widget.sex ?? '').isEmpty
                               ? specs.black200
-                              : specs.pantoneColor,
+                              : specs.pantoneColor4,
                         ),
                       ),
                       SizedBox(

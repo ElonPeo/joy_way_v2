@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/choose_gender.dart';
-import 'package:joy_way/widgets/custom_text_field/custome_select.dart';
+import 'package:joy_way/services/data_processing/time_processing.dart';
+import 'package:joy_way/services/firebase_services/profile_services.dart';
+import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
 
 import '../../../config/general_specifications.dart';
-import '../../../widgets/animated_container/flashing_container.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
-
+import '../../../widgets/notifications/show_notification.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -20,14 +21,13 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final service = ProfileService();
+  bool _saving = false;
 
   String? _sex;
   String? _email;
-  String? _dateOfBirth;
+  DateTime? _dateOfBirth;
   String? _currentAddress;
-
-
-
 
   @override
   void initState() {
@@ -48,7 +48,41 @@ class _EditProfileState extends State<EditProfile> {
     return CustomScaffold(
       backgroundColor: specs.backgroundColor,
       onConfirm: () async {
-        print(_nameController.text);
+        if (_saving) return;
+        _saving = true;
+        FocusScope.of(context).unfocus();
+
+        // 1) Validate
+        final check = await service.checkInformationBeforeSending(
+          _userNameController.text.trim(),
+          _phoneNumberController.text.trim(),
+        );
+        if (check != null) {
+          ShowNotification.showAnimatedSnackBar(
+              context, check, 0, const Duration(milliseconds: 300));
+          _saving = false;
+          return;
+        }
+
+        // 2) Ghi dữ liệu
+        final result = await service.editProfile(
+          userName: _userNameController.text.trim(),
+          name: _nameController.text.trim(),
+          sex: _sex,
+          phoneNumber: _phoneNumberController.text.trim(),
+          dateOfBirth: _dateOfBirth,
+          currentAddress: _currentAddress,
+        );
+        // 3) Thông báo
+        if (result != null) {
+          ShowNotification.showAnimatedSnackBar(
+              context, result, 0, const Duration(milliseconds: 300));
+        } else {
+          ShowNotification.showAnimatedSnackBar(
+              context, "Profile update successful", 3, const Duration(milliseconds: 300));
+        }
+        _saving = false;
+
       },
       title: "Edit profile",
       children: [
@@ -133,12 +167,72 @@ class _EditProfileState extends State<EditProfile> {
                 controller: _nameController,
                 padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
               ),
-              CustomProfileTextField(
-                oldValue: null,
-                nullValue: "Set username",
-                title: "User Name",
-                controller: _userNameController,
+              Container(
                 padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                width: specs.screenWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: specs.screenWidth * 0.3,
+                      child: Text(
+                        'User name',
+                        style: GoogleFonts.outfit(
+                            fontSize: 14, color: specs.black100),
+                      ),
+                    ),
+                    Container(
+                      width: specs.screenWidth * 0.55 - 10,
+                      height: 30,
+
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 15,
+                            child: Text(
+                              '@',
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: specs.pantoneColor,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: specs.screenWidth * 0.55 - 25,
+                            height: 30,
+                            child: TextField(
+                              controller: _userNameController,
+                              maxLength: 100,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z]')),
+                              ],
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                isCollapsed: true,
+                                contentPadding: EdgeInsets.only(top: 3.5),
+                                counterText: '',
+                                hintText: 'Set username',
+                                hintStyle: GoogleFonts.outfit(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: specs.black200),
+                              ),
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: specs.pantoneColor4,
+                              ),
+                            ),
+                          )
+
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -173,8 +267,7 @@ class _EditProfileState extends State<EditProfile> {
                               ),
                             ),
                           ],
-                        )
-                    ),
+                        )),
                   ],
                 ),
               ),
@@ -228,27 +321,44 @@ class _EditProfileState extends State<EditProfile> {
                             fontSize: 14, color: specs.black100),
                       ),
                     ),
-                    SizedBox(
-                        width: specs.screenWidth * 0.55 - 10,
-                        height: 30,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              textAlign: TextAlign.left,
-                              _dateOfBirth ?? "Date of birth",
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: (_dateOfBirth ?? '').isEmpty
-                                    ? specs.black200
-                                    : specs.pantoneColor,
+                    CustomDatePicker(
+                      title: '',
+                      onDateTimeChanged: (value) {
+                        setState(() {
+                          _dateOfBirth = value;
+                        });
+                      },
+                      child: SizedBox(
+                          width: specs.screenWidth * 0.55 - 10,
+                          height: 30,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                textAlign: TextAlign.left,
+                                TimeProcessing.dateToString(_dateOfBirth) ??
+                                    "Date of birth",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: TimeProcessing.dateToString(
+                                      _dateOfBirth) ==
+                                      null
+                                      ? specs.black200
+                                      : specs.pantoneColor4,
+                                ),
                               ),
-                            ),
-                          ],
-                        )
-                    ),
+                              SizedBox(
+                                height: 15,
+                                width: 15,
+                                child: Image.asset(
+                                    "assets/icons/other_icons/angle-right.png"
+                                ),
+                              )
+                            ],
+                          )),
+                    )
                   ],
                 ),
               ),
@@ -281,20 +391,27 @@ class _EditProfileState extends State<EditProfile> {
                                 fontWeight: FontWeight.w500,
                                 color: (_currentAddress ?? '').isEmpty
                                     ? specs.black200
-                                    : specs.pantoneColor,
+                                    : specs.pantoneColor4,
                               ),
                             ),
+                            SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: Image.asset(
+                                  "assets/icons/other_icons/angle-right.png"
+                              ),
+                            )
                           ],
-                        )
-                    ),
+                        )),
                   ],
                 ),
               ),
               ChooseGender(
                 sex: _sex,
-                onSex: (value) => setState(() {
-                  _sex = value;
-                }),
+                onSex: (value) =>
+                    setState(() {
+                      _sex = value;
+                    }),
               )
             ],
           ),
@@ -378,62 +495,37 @@ class _CustomProfileTextFieldState extends State<CustomProfileTextField> {
               style: GoogleFonts.outfit(fontSize: 14, color: specs.black100),
             ),
           ),
-          SizedBox(
+          Container(
             width: specs.screenWidth * 0.55 - 10,
             height: 30,
-            child: Stack(
-              children: [
-                SizedBox(
-                    width: specs.screenWidth * 0.55,
-                    height: 30,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          textAlign: TextAlign.left,
-                          widget.oldValue ?? widget.nullValue,
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: (widget.oldValue ?? '').isEmpty
-                                ? specs.black200
-                                : specs.pantoneColor,
-                          ),
-                        ),
-                      ],
-                    )),
-                Container(
-                  width: specs.screenWidth * 0.55,
-                  height: 30,
-                  color: _controller.text.isNotEmpty
-                      ? Colors.white
-                      : Colors.transparent,
-                  child: TextField(
-                    focusNode: _focusNode,
-                    controller: _controller,
-                    onChanged: widget.onChanged,
-                    maxLength: widget.maxLength,
-                    keyboardType: widget.isNumber ? TextInputType.number : null,
-                    inputFormatters: [
-                      widget.isNumber
-                          ? FilteringTextInputFormatter.digitsOnly
-                          : FilteringTextInputFormatter.allow(
-                              RegExp(r'[a-zA-Z]')),
-                    ],
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                      contentPadding: EdgeInsets.only(top: 3.5),
-                      counterText: '',
-                    ),
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+            color: Colors.transparent,
+            child: TextField(
+              focusNode: _focusNode,
+              controller: _controller,
+              onChanged: widget.onChanged,
+              maxLength: widget.maxLength,
+              keyboardType: widget.isNumber ? TextInputType.number : null,
+              inputFormatters: [
+                widget.isNumber
+                    ? FilteringTextInputFormatter.digitsOnly
+                    : FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
               ],
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                isCollapsed: true,
+                contentPadding: EdgeInsets.only(top: 3.5),
+                counterText: '',
+                hintText: widget.nullValue,
+                hintStyle: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: specs.black200),
+              ),
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: specs.pantoneColor4,
+              ),
             ),
           ),
         ],
