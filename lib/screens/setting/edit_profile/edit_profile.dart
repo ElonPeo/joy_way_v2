@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/choose_gender.dart';
+import 'package:joy_way/screens/setting/edit_profile/components/edit_avatar_bgimage.dart';
 import 'package:joy_way/services/data_processing/time_processing.dart';
 import 'package:joy_way/services/firebase_services/profile_services.dart';
 import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
@@ -9,6 +10,7 @@ import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
 import '../../../config/general_specifications.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
 import '../../../widgets/notifications/show_notification.dart';
+import 'components/custom_profile_text_field.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -24,6 +26,9 @@ class _EditProfileState extends State<EditProfile> {
   final service = ProfileService();
   bool _saving = false;
 
+  String? _name;
+  String? _userName;
+  String? _phoneNumber;
   String? _sex;
   String? _email;
   DateTime? _dateOfBirth;
@@ -32,6 +37,27 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final result = await service.getCurrentUserInformation();
+    if (result != null) {
+      setState(() {
+        _userName = result['userName'];
+        _name = result['name'];
+        _sex = result['sex'];
+        _email = result['email'];
+        _phoneNumber = result['phoneNumber'];
+        _dateOfBirth = result['dateOfBirth'];
+        _currentAddress = result['currentAddress'];
+        if (_name != null) _nameController.text = _name!;
+        if (_userName != null) _userNameController.text = _userName!;
+        if (_phoneNumber != null) _phoneNumberController.text = _phoneNumber!;
+      });
+      print(result);
+    }
+    print(_email);
   }
 
   @override
@@ -79,62 +105,19 @@ class _EditProfileState extends State<EditProfile> {
               context, result, 0, const Duration(milliseconds: 300));
         } else {
           ShowNotification.showAnimatedSnackBar(
-              context, "Profile update successful", 3, const Duration(milliseconds: 300));
+              context,
+              "Profile update successful",
+              3,
+              const Duration(milliseconds: 300));
         }
         _saving = false;
-
       },
       title: "Edit profile",
       children: [
         const SizedBox(height: 25),
-        Container(
-            height: 250,
-            width: specs.screenWidth,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(40)),
-            child: Center(
-              child: GestureDetector(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: Container(
-                    height: 100,
-                    width: 100,
-                    color: const Color.fromRGBO(98, 125, 142, 1),
-                    child: Stack(
-                      children: [
-                        const Center(
-                          child: ImageIcon(
-                            AssetImage(
-                              'assets/icons/other_icons/user.png',
-                            ),
-                            color: Colors.white,
-                            size: 50,
-                          ),
-                        ),
-                        Center(
-                          child: Container(
-                            height: 100,
-                            width: 100,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color.fromRGBO(0, 0, 0, 0.6)),
-                            child: const Center(
-                              child: ImageIcon(
-                                AssetImage(
-                                  'assets/icons/other_icons/camera.png',
-                                ),
-                                color: Colors.white,
-                                size: 50,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )),
+        EditAvatarBgimage(
+
+        ),
         const SizedBox(height: 25),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -161,7 +144,6 @@ class _EditProfileState extends State<EditProfile> {
           child: Column(
             children: [
               CustomProfileTextField(
-                oldValue: null,
                 nullValue: "Your name",
                 title: "Name",
                 controller: _nameController,
@@ -184,7 +166,6 @@ class _EditProfileState extends State<EditProfile> {
                     Container(
                       width: specs.screenWidth * 0.55 - 10,
                       height: 30,
-
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -202,32 +183,50 @@ class _EditProfileState extends State<EditProfile> {
                           SizedBox(
                             width: specs.screenWidth * 0.55 - 25,
                             height: 30,
-                            child: TextField(
-                              controller: _userNameController,
-                              maxLength: 100,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'[a-zA-Z]')),
-                              ],
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                isCollapsed: true,
-                                contentPadding: EdgeInsets.only(top: 3.5),
-                                counterText: '',
-                                hintText: 'Set username',
-                                hintStyle: GoogleFonts.outfit(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: specs.black200),
-                              ),
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: specs.pantoneColor4,
-                              ),
-                            ),
+                            child: _userName == null
+                                ? TextField(
+                                    controller: _userNameController,
+                                    maxLength: 100,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'[a-zA-Z]')),
+                                    ],
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      isCollapsed: true,
+                                      contentPadding: EdgeInsets.only(top: 3.5),
+                                      counterText: '',
+                                      hintText: 'Set username',
+                                      hintStyle: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: specs.black200),
+                                    ),
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: specs.pantoneColor4,
+                                    ),
+                                  )
+                                : SizedBox(
+                                    width: specs.screenWidth * 0.55 - 25,
+                                    height: 30,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _userName ?? 'Set username',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: specs.pantoneColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                           )
-
                         ],
                       ),
                     ),
@@ -300,7 +299,6 @@ class _EditProfileState extends State<EditProfile> {
           child: Column(
             children: [
               CustomProfileTextField(
-                oldValue: null,
                 nullValue: "Your phone number",
                 title: "Phone number",
                 controller: _phoneNumberController,
@@ -343,8 +341,8 @@ class _EditProfileState extends State<EditProfile> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: TimeProcessing.dateToString(
-                                      _dateOfBirth) ==
-                                      null
+                                              _dateOfBirth) ==
+                                          null
                                       ? specs.black200
                                       : specs.pantoneColor4,
                                 ),
@@ -353,8 +351,7 @@ class _EditProfileState extends State<EditProfile> {
                                 height: 15,
                                 width: 15,
                                 child: Image.asset(
-                                    "assets/icons/other_icons/angle-right.png"
-                                ),
+                                    "assets/icons/other_icons/angle-right.png"),
                               )
                             ],
                           )),
@@ -398,8 +395,7 @@ class _EditProfileState extends State<EditProfile> {
                               height: 15,
                               width: 15,
                               child: Image.asset(
-                                  "assets/icons/other_icons/angle-right.png"
-                              ),
+                                  "assets/icons/other_icons/angle-right.png"),
                             )
                           ],
                         )),
@@ -408,10 +404,9 @@ class _EditProfileState extends State<EditProfile> {
               ),
               ChooseGender(
                 sex: _sex,
-                onSex: (value) =>
-                    setState(() {
-                      _sex = value;
-                    }),
+                onSex: (value) => setState(() {
+                  _sex = value;
+                }),
               )
             ],
           ),
@@ -425,111 +420,3 @@ class _EditProfileState extends State<EditProfile> {
   }
 }
 
-class CustomProfileTextField extends StatefulWidget {
-  final String? oldValue;
-  final String nullValue;
-  final String title;
-  final int maxLength;
-  final bool isNumber;
-  final EdgeInsets padding;
-  final ValueChanged<String>? onChanged;
-  final TextEditingController? controller;
-
-  const CustomProfileTextField({
-    super.key,
-    required this.oldValue,
-    required this.nullValue,
-    required this.title,
-    this.isNumber = false,
-    this.maxLength = 100,
-    this.padding = const EdgeInsets.symmetric(vertical: 15),
-    this.onChanged,
-    this.controller,
-  });
-
-  @override
-  State<CustomProfileTextField> createState() => _CustomProfileTextFieldState();
-}
-
-class _CustomProfileTextFieldState extends State<CustomProfileTextField> {
-  final FocusNode _focusNode = FocusNode();
-  late TextEditingController _controller;
-  bool _isFocused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = widget.controller ?? TextEditingController();
-    _focusNode.addListener(_updateFocus);
-    _controller.addListener(_updateFocus);
-  }
-
-  void _updateFocus() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus || _controller.text.isNotEmpty;
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final specs = GeneralSpecifications(context);
-    return Container(
-      padding: widget.padding,
-      width: specs.screenWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: specs.screenWidth * 0.3,
-            child: Text(
-              widget.title,
-              style: GoogleFonts.outfit(fontSize: 14, color: specs.black100),
-            ),
-          ),
-          Container(
-            width: specs.screenWidth * 0.55 - 10,
-            height: 30,
-            color: Colors.transparent,
-            child: TextField(
-              focusNode: _focusNode,
-              controller: _controller,
-              onChanged: widget.onChanged,
-              maxLength: widget.maxLength,
-              keyboardType: widget.isNumber ? TextInputType.number : null,
-              inputFormatters: [
-                widget.isNumber
-                    ? FilteringTextInputFormatter.digitsOnly
-                    : FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
-              ],
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                isCollapsed: true,
-                contentPadding: EdgeInsets.only(top: 3.5),
-                counterText: '',
-                hintText: widget.nullValue,
-                hintStyle: GoogleFonts.outfit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: specs.black200),
-              ),
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: specs.pantoneColor4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

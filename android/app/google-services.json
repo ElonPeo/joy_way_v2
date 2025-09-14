@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "410896405939",
-    "project_id": "joyway-fd954",
-    "storage_bucket": "joyway-fd954.firebasestorage.app"
+    "project_number": "455725713809",
+    "project_id": "joyway-58ef5",
+    "storage_bucket": "joyway-58ef5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:410896405939:android:86d751ad756a7c5ca5e7c6",
+        "mobilesdk_app_id": "1:455725713809:android:68adf236e724d087757230",
         "android_client_info": {
           "package_name": "com.example.joy_way"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA6LthHMAn4FHGrfIaf5cJ_4MZsFspmtfk"
+          "current_key": "AIzaSyASVB1aTjcrGElyQbuan_GDes1-9nU0a9k"
         }
       ],
       "services": {

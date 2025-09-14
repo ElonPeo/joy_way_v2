@@ -66,8 +66,8 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
   ];
 
 
-  List<String> _titleErr = ["Oh Snap!", "Warning!", "Hi There!", "Well done!"];
-  List<String> _iconPath = [
+  final List<String> _titleErr = ["Oh Snap!", "Warning!", "Hi There!", "Well done!"];
+  final List<String> _iconPath = [
     "assets/notification_bg/close.svg",
     "assets/notification_bg/warning.svg",
     "assets/notification_bg/question.svg",

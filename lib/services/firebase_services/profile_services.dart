@@ -41,25 +41,56 @@ class ProfileService {
     }
   }
 
-  Future<List<dynamic>?> getUserInformation(String uid) async {
+  Future<Map<String, dynamic>?> getUserInformation(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
       if (!doc.exists) return null;
+
       final data = doc.data() as Map<String, dynamic>;
-      return [
-        data['userName'],
-        data['fullName'],
-        data['sex'],
-        data['phoneNumber'],
-        data['dateOfBirth'] != null
+      return {
+        'userName': data['userName'],
+        'name': data['name'],
+        'sex': data['sex'],
+        'phoneNumber': data['phoneNumber'],
+        'dateOfBirth': data['dateOfBirth'] != null
             ? (data['dateOfBirth'] as Timestamp).toDate()
             : null,
-        data['currentAddress'],
-      ];
+        'currentAddress': data['currentAddress'],
+      };
     } catch (e) {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getCurrentUserInformation() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!doc.exists) return null;
+
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'userName': data['userName'],
+        'name': data['name'],
+        'sex': data['sex'],
+        'phoneNumber': data['phoneNumber'],
+        'dateOfBirth': data['dateOfBirth'] != null
+            ? (data['dateOfBirth'] as Timestamp).toDate()
+            : null,
+        'currentAddress': data['currentAddress'],
+        'email': data['email'],
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
 
   Future<Map<String, dynamic>?> getOtherUserInformationByUid(String uid) async {
     try {
@@ -68,7 +99,7 @@ class ProfileService {
       final data = doc.data() as Map<String, dynamic>;
       return {
         'userName': data['userName'],
-        'fullName': data['fullName'],
+        'name': data['name'],
         'sex': data['sex'],
         'phoneNumber': data['phoneNumber'],
         'dateOfBirth': data['dateOfBirth'] != null
@@ -103,20 +134,31 @@ class ProfileService {
     if (userName == null || userName.trim().isEmpty) {
       return "Username cannot be empty.";
     }
-    if (userName.trim().length < 4) {
+
+    final trimmedUserName = userName.trim();
+
+    if (trimmedUserName.length < 4) {
       return "Username must be at least 4 characters.";
     }
-    final exists = await checkUserNameExists(userName);
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9]+$');
+    if (!usernameRegex.hasMatch(trimmedUserName)) {
+      return "Username can only contain letters and numbers (no special characters).";
+    }
+
+    final exists = await checkUserNameExists(trimmedUserName);
     if (exists) return "Username already exists.";
 
     if (phoneNumber == null || phoneNumber.trim().isEmpty) {
       return "Phone number must be 10 digits and start with 03/05/07/08/09.";
     }
+
     if (checkValidPhoneNumber(phoneNumber) != 1) {
       return "Phone number must be 10 digits and start with 03/05/07/08/09.";
     }
+
     return null;
   }
+
 
   // ==== Writes ====
   Future<String?> createUserInformation({
@@ -131,16 +173,15 @@ class ProfileService {
   }) async {
     try {
       final docRef = _db.collection('users').doc(userId);
-      final formattedUserName =
-      (userName != null && userName.isNotEmpty) ? '@${userName.trim()}' : null;
+
       final data = <String, dynamic>{
         'email': email,
         'userId': userId,
-        'userName': formattedUserName,
-        'searchKeywords': formattedUserName != null
-            ? generateSearchKeywords(formattedUserName)
+        'userName': userName,
+        'searchKeywords': userName != null
+            ? generateSearchKeywords(userName)
             : null,
-        'fullName': name,
+        'name': name,
         'sex': sex,
         'phoneNumber': phoneNumber,
         'dateOfBirth': dateOfBirth != null ? Timestamp.fromDate(dateOfBirth) : null,
@@ -157,7 +198,7 @@ class ProfileService {
   }
 
   Future<String?> updateUserInformation({
-    String? userName,
+
     String? name,
     String? sex,
     String? phoneNumber,
@@ -167,15 +208,8 @@ class ProfileService {
     try {
       final uid = _uid;
       if (uid == null) return "NOT_LOGGED_IN";
-
-      final formattedUserName =
-      (userName != null && userName.isNotEmpty) ? '@${userName.trim()}' : null;
-
       final data = <String, dynamic>{
-        if (formattedUserName != null) 'userName': formattedUserName,
-        if (formattedUserName != null)
-          'searchKeywords': generateSearchKeywords(formattedUserName),
-        if (name != null) 'fullName': name,
+        if (name != null) 'name': name,
         if (sex != null) 'sex': sex,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
         if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth),
@@ -207,7 +241,6 @@ class ProfileService {
       final exists = await checkUserExists(uid);
       if (exists) {
         return await updateUserInformation(
-          userName: userName,
           name: name,
           sex: sex,
           phoneNumber: phoneNumber,
