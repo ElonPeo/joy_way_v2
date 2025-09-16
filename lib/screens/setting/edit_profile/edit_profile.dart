@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/screens/setting/edit_profile/components/avatar_and_background_image.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/choose_gender.dart';
-import 'package:joy_way/screens/setting/edit_profile/components/edit_avatar_bgimage.dart';
 import 'package:joy_way/services/data_processing/time_processing.dart';
-import 'package:joy_way/services/firebase_services/profile_services.dart';
+import 'package:joy_way/services/firebase_services/profile_services/profile_fire_storage_image.dart';
+import 'package:joy_way/services/firebase_services/profile_services/profile_firestore.dart';
 import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
+import 'package:joy_way/widgets/notifications/show_loading.dart';
 
 import '../../../config/general_specifications.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
@@ -23,7 +27,7 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  final service = ProfileService();
+
   bool _saving = false;
 
   String? _name;
@@ -33,6 +37,8 @@ class _EditProfileState extends State<EditProfile> {
   String? _email;
   DateTime? _dateOfBirth;
   String? _currentAddress;
+  File? _avatarImage;
+  File? _bgImage;
 
   @override
   void initState() {
@@ -41,7 +47,7 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<void> _loadUserInfo() async {
-    final result = await service.getCurrentUserInformation();
+    final result = await ProfileFirestore().getCurrentUserInformation();
     if (result != null) {
       setState(() {
         _userName = result['userName'];
@@ -57,6 +63,7 @@ class _EditProfileState extends State<EditProfile> {
       });
       print(result);
     }
+
     print(_email);
   }
 
@@ -68,6 +75,8 @@ class _EditProfileState extends State<EditProfile> {
     super.dispose();
   }
 
+  bool isClose = false;
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
@@ -78,45 +87,87 @@ class _EditProfileState extends State<EditProfile> {
         _saving = true;
         FocusScope.of(context).unfocus();
 
-        // 1) Validate
-        final check = await service.checkInformationBeforeSending(
-          _userNameController.text.trim(),
-          _phoneNumberController.text.trim(),
+        final loading = ShowLoadingController();
+        // mở loading
+        ShowLoading.show(
+          context: context,
+          controller: loading,
+          message: "We are updating your profile...",
         );
-        if (check != null) {
-          ShowNotification.showAnimatedSnackBar(
-              context, check, 0, const Duration(milliseconds: 300));
-          _saving = false;
-          return;
-        }
 
-        // 2) Ghi dữ liệu
-        final result = await service.editProfile(
-          userName: _userNameController.text.trim(),
-          name: _nameController.text.trim(),
-          sex: _sex,
-          phoneNumber: _phoneNumberController.text.trim(),
-          dateOfBirth: _dateOfBirth,
-          currentAddress: _currentAddress,
-        );
-        // 3) Thông báo
-        if (result != null) {
-          ShowNotification.showAnimatedSnackBar(
-              context, result, 0, const Duration(milliseconds: 300));
-        } else {
-          ShowNotification.showAnimatedSnackBar(
-              context,
-              "Profile update successful",
-              3,
-              const Duration(milliseconds: 300));
+        try {
+          // 1) Validate
+          final check = await ProfileFirestore().checkInformationBeforeSending(
+            _userNameController.text.trim(),
+            _phoneNumberController.text.trim(),
+          );
+          if (check != null) {
+            loading.close(false);
+            ShowNotification.showAnimatedSnackBar(context, check, 0, const Duration(milliseconds: 300));
+            return;
+          }
+
+          // 2) Upload ảnh
+          final imageResult = await ProfileFireStorageImage().uploadAvatarAndBackgroundImages(
+            avatarFile: _avatarImage, backgroundFile: _bgImage,
+          );
+
+          // 3) Cập nhật profile
+          final result = await ProfileFirestore().editProfile(
+            userName: _userNameController.text.trim(),
+            name: _nameController.text.trim(),
+            sex: _sex,
+            phoneNumber: _phoneNumberController.text.trim(),
+            dateOfBirth: _dateOfBirth,
+            currentAddress: _currentAddress,
+          );
+
+          // 4) Thông báo
+          final triedUploadImages = (_avatarImage != null) || (_bgImage != null);
+          String? errorMsg;
+          String? successMsg;
+
+          if (imageResult != null && result != null) {
+            errorMsg = 'Failed to update images: $imageResult\nFailed to update profile: $result';
+          } else if (imageResult != null) {
+            errorMsg = 'Failed to update avatar/background: $imageResult';
+            if (result == null) errorMsg += '\nProfile updated successfully.';
+          } else if (result != null) {
+            errorMsg = 'Failed to update profile: $result';
+            if (triedUploadImages) errorMsg += '\nAvatar/background may have been updated.';
+          } else {
+            successMsg = triedUploadImages ? 'Profile & images updated successfully' : 'Profile update successful';
+          }
+
+          if (errorMsg != null) {
+            loading.close(false);
+            ShowNotification.showAnimatedSnackBar(context, errorMsg, 0, const Duration(milliseconds: 500));
+          } else {
+            loading.close(true);
+            ShowNotification.showAnimatedSnackBar(context, successMsg!, 3, const Duration(milliseconds: 500));
+          }
+        } catch (e) {
+          loading.close(false);
+          ShowNotification.showAnimatedSnackBar(context, e.toString(), 0, const Duration(milliseconds: 500));
+        } finally {
+          _saving = false;
         }
-        _saving = false;
       },
+
       title: "Edit profile",
       children: [
         const SizedBox(height: 25),
-        EditAvatarBgimage(
-
+        AvatarAndBackgroundImage(
+          onAvatarImage: (value) => {
+            setState(() {
+              _avatarImage = value;
+            })
+          },
+          onBgImage: (value) => {
+            setState(() {
+              _bgImage = value;
+            }),
+          },
         ),
         const SizedBox(height: 25),
         Row(
@@ -212,8 +263,10 @@ class _EditProfileState extends State<EditProfile> {
                                     width: specs.screenWidth * 0.55 - 25,
                                     height: 30,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           _userName ?? 'Set username',
@@ -419,4 +472,3 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 }
-
