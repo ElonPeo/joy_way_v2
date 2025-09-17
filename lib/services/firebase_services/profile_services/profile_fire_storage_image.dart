@@ -26,7 +26,6 @@ class ProfileFireStorageImage {
 
 // users/{uid}/personal/avatar/{imageId}.jpg
 // users/{uid}/personal/background/{imageId}.jpg
-
   Future<String?> uploadAvatarAndBackgroundImages({
     File? avatarFile,
     File? backgroundFile,
@@ -34,11 +33,34 @@ class ProfileFireStorageImage {
     List<String> allowedUserIds = const [],
   }) async {
     final user = _auth.currentUser;
-    if (user == null) {
-      return 'User not logged in';
-    }
+    if (user == null) return 'User not logged in';
 
     final ownerUid = user.uid;
+
+    // ---- helper: xóa theo imageId (doc + file)
+    Future<void> _deleteById(String imageId) async {
+      final docRef = _firestore.collection('images').doc(imageId);
+      try {
+        final snap = await docRef.get();
+        if (!snap.exists) {
+          // Không có doc — cố đoán đường dẫn mặc định và xóa file nếu có
+          // (tuỳ bạn: bỏ qua block này nếu bạn luôn tạo doc)
+          return;
+        }
+        final data = snap.data()!;
+        final String storagePath = data['storagePath'];
+        // Xóa file
+        try {
+          await _storage.ref().child(storagePath).delete();
+        } catch (_) {}
+        // Xóa doc
+        try {
+          await docRef.delete();
+        } catch (_) {}
+      } catch (_) {
+        // ignore best-effort
+      }
+    }
 
     Future<({
     String imageId,
@@ -96,21 +118,22 @@ class ProfileFireStorageImage {
     );
 
     Future<void> _safeDelete(
-        DocumentReference<Map<String, dynamic>>? d, Reference? r) async {
-      try {
-        if (d != null) await d.delete();
-      } catch (_) {}
-      try {
-        if (r != null) await r.delete();
-      } catch (_) {}
+        DocumentReference<Map<String, dynamic>>? d,
+        Reference? r,
+        ) async {
+      try { if (d != null) await d.delete(); } catch (_) {}
+      try { if (r != null) await r.delete(); } catch (_) {}
     }
 
     try {
-      // Không có file nào -> coi như thành công (không làm gì)
-      if (avatarFile == null && backgroundFile == null) {
-        return null;
-      }
+      if (avatarFile == null && backgroundFile == null) return null;
 
+      // --- Lấy ID cũ trước khi upload
+      final userDoc = await _firestore.collection('users').doc(ownerUid).get();
+      final prevAvatarId = userDoc.data()?['avatarImageId'] as String?;
+      final prevBgId     = userDoc.data()?['backgroundImageId'] as String?;
+
+      // --- Upload (có thể song song)
       final futures = <Future<void>>[];
 
       if (avatarFile != null) {
@@ -143,6 +166,7 @@ class ProfileFireStorageImage {
 
       await Future.wait(futures, eagerError: true);
 
+      // --- Update user với ID mới
       final update = <String, dynamic>{
         'updatedAt': FieldValue.serverTimestamp(),
       };
@@ -156,13 +180,28 @@ class ProfileFireStorageImage {
         );
       }
 
+      // --- Xóa ảnh cũ (best-effort, sau khi thành công)
+      final deleteFutures = <Future<void>>[];
+      if (avatarFile != null && prevAvatarId != null && prevAvatarId != acc.avatarId) {
+        deleteFutures.add(_deleteById(prevAvatarId));
+      }
+      if (backgroundFile != null && prevBgId != null && prevBgId != acc.bgId) {
+        deleteFutures.add(_deleteById(prevBgId));
+      }
+      if (deleteFutures.isNotEmpty) {
+        // không cần eagerError; tránh fail toàn bộ chỉ vì cleanup
+        await Future.wait(deleteFutures);
+      }
+
       return null; // thành công
     } catch (e) {
+      // rollback ảnh mới vừa tạo
       await _safeDelete(acc.avatarDoc, acc.avatarRef);
       await _safeDelete(acc.bgDoc, acc.bgRef);
       return 'Upload avatar/background failed: $e';
     }
   }
+
 
 
 

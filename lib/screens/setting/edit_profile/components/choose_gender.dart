@@ -3,44 +3,33 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/general_specifications.dart';
 import '../../../../widgets/animated_container/flashing_container.dart';
+import '../../../../widgets/animated_container/loading_container.dart';
 import '../../../../widgets/custom_input/custom_select.dart';
+import 'custom_title_input_profile.dart';
 
-
-
-class ChooseGender extends StatefulWidget{
+class ChooseGender extends StatefulWidget {
   final String? sex;
   final Function(String) onSex;
-  const ChooseGender({super.key,
-  this.sex, required this.onSex
-  });
+  final bool dataFetched;
+
+  const ChooseGender(
+      {super.key, this.sex, required this.onSex, required this.dataFetched});
+
   @override
   State<ChooseGender> createState() => _ChooseGenderState();
 }
 
 class _ChooseGenderState extends State<ChooseGender> {
-
-
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-
-    return Container(
-      padding: const EdgeInsets.all(10),
-      width: specs.screenWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: specs.screenWidth * 0.3,
-            child: Text(
-              "Sex",
-              style: GoogleFonts.outfit(
-                  fontSize: 14, color: specs.black100),
-            ),
-          ),
-          CustomSelect(
+    return CustomTitleInputProfile(
+      titleInput: "Sex",
+      child: widget.dataFetched
+          ? LoadingContainer(width: 50, height: 30)
+          : CustomSelect(
               child: SizedBox(
-                  width: specs.screenWidth * 0.55 - 10,
+                  width: specs.screenWidth - 170,
                   height: 30,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -61,133 +50,126 @@ class _ChooseGenderState extends State<ChooseGender> {
                         height: 15,
                         width: 15,
                         child: Image.asset(
-                            "assets/icons/other_icons/angle-right.png"
-                        ),
+                            "assets/icons/other_icons/angle-right.png"),
                       )
                     ],
-                  )
-              ),
+                  )),
               children: [
-                FlashingContainer(
-                  onTap: () async {
-                    await widget.onSex("Male");
-                    Navigator.pop(context);
-                  },
-                  height: 50,
-                  width: specs.screenWidth,
-                  borderRadius: BorderRadius.circular(0),
-                  color: Colors.white,
-                  flashingColor: specs.black240,
-                  child: Container(
+                  FlashingContainer(
+                    onTap: () async {
+                      await widget.onSex("Male");
+                      Navigator.pop(context);
+                    },
+                    height: 50,
                     width: specs.screenWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: specs.black240,
-                          width: 1,
-                          style: BorderStyle.solid,
+                    borderRadius: BorderRadius.circular(0),
+                    color: Colors.white,
+                    flashingColor: specs.black240,
+                    child: Container(
+                      width: specs.screenWidth,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: specs.black240,
+                            width: 1,
+                            style: BorderStyle.solid,
+                          ),
                         ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          "Male",
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                            fontSize: 15,
-                            decoration: TextDecoration.none,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            width: 10,
                           ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                FlashingContainer(
-                  onTap: () async {
-                    await widget.onSex("Female");
-                    Navigator.pop(context);
-                  },
-                  height: 50,
-                  width: specs.screenWidth,
-                  borderRadius: BorderRadius.circular(0),
-                  color: Colors.white,
-                  flashingColor: specs.black240,
-                  child: Container(
-                    width: specs.screenWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: specs.black240,
-                          width: 1,
-                          style: BorderStyle.solid,
-                        ),
+                          Text(
+                            "Male",
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                              fontSize: 15,
+                              decoration: TextDecoration.none,
+                            ),
+                          )
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          "Female",
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                            fontSize: 15,
-                            decoration: TextDecoration.none,
-                          ),
-                        )
-                      ],
-                    ),
                   ),
-                ),
-                FlashingContainer(
-                  onTap: () async {
-                    await widget.onSex("Other/Prefer not to say");
-                    Navigator.pop(context);
-                  },
-
-                  height: 50,
-                  width: specs.screenWidth,
-                  borderRadius: BorderRadius.circular(0),
-                  color: Colors.white,
-                  flashingColor: specs.black240,
-                  child: Container(
+                  FlashingContainer(
+                    onTap: () async {
+                      await widget.onSex("Female");
+                      Navigator.pop(context);
+                    },
+                    height: 50,
                     width: specs.screenWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          "Other/Prefer not to say",
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                            fontSize: 15,
-                            decoration: TextDecoration.none,
+                    borderRadius: BorderRadius.circular(0),
+                    color: Colors.white,
+                    flashingColor: specs.black240,
+                    child: Container(
+                      width: specs.screenWidth,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: specs.black240,
+                            width: 1,
+                            style: BorderStyle.solid,
                           ),
-                        )
-                      ],
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Female",
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                              fontSize: 15,
+                              decoration: TextDecoration.none,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ]
-          ),
-
-        ],
-      ),
+                  FlashingContainer(
+                    onTap: () async {
+                      await widget.onSex("Other/Prefer not to say");
+                      Navigator.pop(context);
+                    },
+                    height: 50,
+                    width: specs.screenWidth,
+                    borderRadius: BorderRadius.circular(0),
+                    color: Colors.white,
+                    flashingColor: specs.black240,
+                    child: Container(
+                      width: specs.screenWidth,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Other/Prefer not to say",
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                              fontSize: 15,
+                              decoration: TextDecoration.none,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ]),
     );
   }
 }

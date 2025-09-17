@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:joy_way/widgets/animated_container/animated_button.dart';
 import 'package:joy_way/widgets/animated_icons/loading_rive_icon.dart';
 
 
@@ -136,7 +135,16 @@ class _AnimatedLoadingSnackBarState extends State<_AnimatedLoadingSnackBar>
           ),
         ),
         AnimatedModalBarrier(color: _barrier, dismissible: false),
-
+        Positioned.fill(
+          child: AnimatedBuilder(
+            animation: _ac,
+            builder: (_, __) => GestureDetector(
+              behavior: HitTestBehavior.opaque, // đảm bảo nhận tap
+              onTap: () => widget.controller.close(), // <<< tap ra ngoài để đóng
+              child: Container(color: _barrier.value),
+            ),
+          ),
+        ),
         Positioned(
           top: 0, left: 0, right: 0,
           child: SlideTransition(

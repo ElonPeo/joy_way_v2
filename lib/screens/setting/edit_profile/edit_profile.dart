@@ -5,16 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/avatar_and_background_image.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/choose_gender.dart';
+import 'package:joy_way/screens/setting/edit_profile/components/custom_title_input_profile.dart';
 import 'package:joy_way/services/data_processing/time_processing.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_fire_storage_image.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_firestore.dart';
+import 'package:joy_way/widgets/animated_container/loading_container.dart';
 import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
 import 'package:joy_way/widgets/notifications/show_loading.dart';
 
 import '../../../config/general_specifications.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
 import '../../../widgets/notifications/show_notification.dart';
-import 'components/custom_profile_text_field.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -29,7 +30,7 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController _phoneNumberController = TextEditingController();
 
   bool _saving = false;
-
+  bool dataFetched = true;
   String? _name;
   String? _userName;
   String? _phoneNumber;
@@ -61,10 +62,12 @@ class _EditProfileState extends State<EditProfile> {
         if (_userName != null) _userNameController.text = _userName!;
         if (_phoneNumber != null) _phoneNumberController.text = _phoneNumber!;
       });
-      print(result);
     }
-
-    print(_email);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        dataFetched = false;
+      });
+    });
   }
 
   @override
@@ -75,11 +78,11 @@ class _EditProfileState extends State<EditProfile> {
     super.dispose();
   }
 
-  bool isClose = false;
 
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
+    double inputWidth = specs.screenWidth - 60;
     return CustomScaffold(
       backgroundColor: specs.backgroundColor,
       onConfirm: () async {
@@ -94,6 +97,7 @@ class _EditProfileState extends State<EditProfile> {
           controller: loading,
           message: "We are updating your profile...",
         );
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         try {
           // 1) Validate
@@ -103,13 +107,16 @@ class _EditProfileState extends State<EditProfile> {
           );
           if (check != null) {
             loading.close(false);
-            ShowNotification.showAnimatedSnackBar(context, check, 0, const Duration(milliseconds: 300));
+            ShowNotification.showAnimatedSnackBar(
+                context, check, 0, const Duration(milliseconds: 300));
             return;
           }
 
           // 2) Upload ảnh
-          final imageResult = await ProfileFireStorageImage().uploadAvatarAndBackgroundImages(
-            avatarFile: _avatarImage, backgroundFile: _bgImage,
+          final imageResult =
+              await ProfileFireStorageImage().uploadAvatarAndBackgroundImages(
+            avatarFile: _avatarImage,
+            backgroundFile: _bgImage,
           );
 
           // 3) Cập nhật profile
@@ -123,37 +130,44 @@ class _EditProfileState extends State<EditProfile> {
           );
 
           // 4) Thông báo
-          final triedUploadImages = (_avatarImage != null) || (_bgImage != null);
+          final triedUploadImages =
+              (_avatarImage != null) || (_bgImage != null);
           String? errorMsg;
           String? successMsg;
 
           if (imageResult != null && result != null) {
-            errorMsg = 'Failed to update images: $imageResult\nFailed to update profile: $result';
+            errorMsg =
+                'Failed to update images: $imageResult\nFailed to update profile: $result';
           } else if (imageResult != null) {
             errorMsg = 'Failed to update avatar/background: $imageResult';
             if (result == null) errorMsg += '\nProfile updated successfully.';
           } else if (result != null) {
             errorMsg = 'Failed to update profile: $result';
-            if (triedUploadImages) errorMsg += '\nAvatar/background may have been updated.';
+            if (triedUploadImages)
+              errorMsg += '\nAvatar/background may have been updated.';
           } else {
-            successMsg = triedUploadImages ? 'Profile & images updated successfully' : 'Profile update successful';
+            successMsg = triedUploadImages
+                ? 'Profile & images updated successfully'
+                : 'Profile update successful';
           }
 
           if (errorMsg != null) {
             loading.close(false);
-            ShowNotification.showAnimatedSnackBar(context, errorMsg, 0, const Duration(milliseconds: 500));
+            ShowNotification.showAnimatedSnackBar(
+                context, errorMsg, 0, const Duration(milliseconds: 500));
           } else {
             loading.close(true);
-            ShowNotification.showAnimatedSnackBar(context, successMsg!, 3, const Duration(milliseconds: 500));
+            ShowNotification.showAnimatedSnackBar(
+                context, successMsg!, 3, const Duration(milliseconds: 500));
           }
         } catch (e) {
           loading.close(false);
-          ShowNotification.showAnimatedSnackBar(context, e.toString(), 0, const Duration(milliseconds: 500));
+          ShowNotification.showAnimatedSnackBar(
+              context, e.toString(), 0, const Duration(milliseconds: 500));
         } finally {
           _saving = false;
         }
       },
-
       title: "Edit profile",
       children: [
         const SizedBox(height: 25),
@@ -184,144 +198,119 @@ class _EditProfileState extends State<EditProfile> {
             ),
           ],
         ),
+        const SizedBox(height: 10),
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 10),
           width: specs.screenWidth,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: Colors.white,
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              CustomProfileTextField(
-                nullValue: "Your name",
-                title: "Name",
-                controller: _nameController,
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                width: specs.screenWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: specs.screenWidth * 0.3,
-                      child: Text(
-                        'User name',
-                        style: GoogleFonts.outfit(
-                            fontSize: 14, color: specs.black100),
+              CustomTitleInputProfile(
+                titleInput: "Name",
+                child: dataFetched
+                    ? LoadingContainer(width: inputWidth - 110, height: 30)
+                    : SizedBox(
+                        width: inputWidth - 110,
+                        child: TextField(
+                          controller: _nameController,
+                          maxLength: 50,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Za-z ]')),
+                          ],
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            isCollapsed: true,
+                            contentPadding: const EdgeInsets.only(top: 3.5),
+                            counterText: '',
+                            hintText: "Your name",
+                            hintStyle: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: specs.black200),
+                          ),
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: specs.pantoneColor4,
+                          ),
+                        ),
                       ),
-                    ),
-                    Container(
-                      width: specs.screenWidth * 0.55 - 10,
-                      height: 30,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              CustomTitleInputProfile(
+                titleInput: "User name",
+                child: dataFetched
+                    ? const LoadingContainer(width: 120, height: 30)
+                    : Row(
                         children: [
                           SizedBox(
-                            width: 15,
+                            width: 18,
                             child: Text(
-                              '@',
+                              "@",
                               style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
                                 color: specs.pantoneColor,
+                                fontSize: 20,
                               ),
                             ),
                           ),
                           SizedBox(
-                            width: specs.screenWidth * 0.55 - 25,
-                            height: 30,
-                            child: _userName == null
-                                ? TextField(
-                                    controller: _userNameController,
-                                    maxLength: 100,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'[a-zA-Z]')),
-                                    ],
-                                    decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      isCollapsed: true,
-                                      contentPadding: EdgeInsets.only(top: 3.5),
-                                      counterText: '',
-                                      hintText: 'Set username',
-                                      hintStyle: GoogleFonts.outfit(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                          color: specs.black200),
-                                    ),
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: specs.pantoneColor4,
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: specs.screenWidth * 0.55 - 25,
-                                    height: 30,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _userName ?? 'Set username',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: specs.pantoneColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                width: specs.screenWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: specs.screenWidth * 0.3,
-                      child: Text(
-                        "Email",
-                        style: GoogleFonts.outfit(
-                            fontSize: 14, color: specs.black100),
-                      ),
-                    ),
-                    SizedBox(
-                        width: specs.screenWidth * 0.55 - 10,
-                        height: 30,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              textAlign: TextAlign.left,
-                              _email ?? "Email",
+                            width: inputWidth - 130,
+                            child: TextField(
+                              controller: _userNameController,
+                              maxLength: 50,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[A-Za-z ]')),
+                              ],
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                isCollapsed: true,
+                                contentPadding: const EdgeInsets.only(top: 3.5),
+                                counterText: '',
+                                hintText: "Username",
+                                hintStyle: GoogleFonts.outfit(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: specs.black200),
+                              ),
                               style: GoogleFonts.outfit(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: (_email ?? '').isEmpty
-                                    ? specs.black200
-                                    : specs.pantoneColor,
+                                color: specs.pantoneColor4,
                               ),
                             ),
-                          ],
-                        )),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              CustomTitleInputProfile(
+                titleInput: "Email",
+                child: dataFetched
+                    ? const LoadingContainer(width: 100, height: 30)
+                    : SizedBox(
+                        width: inputWidth - 130,
+                        child: Text(
+                          textAlign: TextAlign.left,
+                          _email ?? "Email",
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: (_email ?? '').isEmpty
+                                ? specs.black200
+                                : specs.pantoneColor,
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -341,46 +330,105 @@ class _EditProfileState extends State<EditProfile> {
             ),
           ],
         ),
+        const SizedBox(height: 10),
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          width: specs.screenWidth,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.white,
-          ),
-          child: Column(
-            children: [
-              CustomProfileTextField(
-                nullValue: "Your phone number",
-                title: "Phone number",
-                controller: _phoneNumberController,
-                isNumber: true,
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                width: specs.screenWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: specs.screenWidth * 0.3,
-                      child: Text(
-                        "DOB",
-                        style: GoogleFonts.outfit(
-                            fontSize: 14, color: specs.black100),
-                      ),
-                    ),
-                    CustomDatePicker(
-                      title: '',
-                      onDateTimeChanged: (value) {
-                        setState(() {
-                          _dateOfBirth = value;
-                        });
-                      },
-                      child: SizedBox(
+            width: specs.screenWidth,
+            padding:
+                const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+            ),
+            child: Column(
+              children: [
+                CustomTitleInputProfile(
+                  titleInput: "Phone number",
+                  child: dataFetched
+                      ? LoadingContainer(width: inputWidth - 110, height: 30)
+                      : Container(
                           width: specs.screenWidth * 0.55 - 10,
+                          color: Colors.transparent,
+                          child: TextField(
+                            controller: _phoneNumberController,
+                            maxLength: 10,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              isCollapsed: true,
+                              contentPadding: const EdgeInsets.only(top: 3.5),
+                              counterText: '',
+                              hintText: 'Phone number',
+                              hintStyle: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: specs.black200),
+                            ),
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: specs.pantoneColor4,
+                            ),
+                          ),
+                        ),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                CustomTitleInputProfile(
+                  titleInput: "DOB",
+                  child: dataFetched
+                      ? LoadingContainer(width: inputWidth - 201, height: 30)
+                      : CustomDatePicker(
+                          title: '',
+                          onDateTimeChanged: (value) {
+                            setState(() {
+                              _dateOfBirth = value;
+                            });
+                          },
+                          child: SizedBox(
+                              width: inputWidth - 110,
+                              height: 30,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.left,
+                                    TimeProcessing.dateToString(_dateOfBirth) ??
+                                        "Date of birth",
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: TimeProcessing.dateToString(
+                                                  _dateOfBirth) ==
+                                              null
+                                          ? specs.black200
+                                          : specs.pantoneColor4,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 15,
+                                    width: 15,
+                                    child: Image.asset(
+                                        "assets/icons/other_icons/angle-right.png"),
+                                  )
+                                ],
+                              )),
+                        ),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                CustomTitleInputProfile(
+                  titleInput: "Current address",
+                  child: dataFetched
+                      ? LoadingContainer(width: inputWidth - 150, height: 30)
+                      : SizedBox(
+                          width: inputWidth - 110,
                           height: 30,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -388,14 +436,11 @@ class _EditProfileState extends State<EditProfile> {
                             children: [
                               Text(
                                 textAlign: TextAlign.left,
-                                TimeProcessing.dateToString(_dateOfBirth) ??
-                                    "Date of birth",
+                                _currentAddress ?? "Where you live",
                                 style: GoogleFonts.outfit(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: TimeProcessing.dateToString(
-                                              _dateOfBirth) ==
-                                          null
+                                  color: (_currentAddress ?? '').isEmpty
                                       ? specs.black200
                                       : specs.pantoneColor4,
                                 ),
@@ -408,62 +453,19 @@ class _EditProfileState extends State<EditProfile> {
                               )
                             ],
                           )),
-                    )
-                  ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                width: specs.screenWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: specs.screenWidth * 0.3,
-                      child: Text(
-                        "Current address",
-                        style: GoogleFonts.outfit(
-                            fontSize: 14, color: specs.black100),
-                      ),
-                    ),
-                    SizedBox(
-                        width: specs.screenWidth * 0.55 - 10,
-                        height: 30,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              textAlign: TextAlign.left,
-                              _currentAddress ?? "Where you live",
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: (_currentAddress ?? '').isEmpty
-                                    ? specs.black200
-                                    : specs.pantoneColor4,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 15,
-                              width: 15,
-                              child: Image.asset(
-                                  "assets/icons/other_icons/angle-right.png"),
-                            )
-                          ],
-                        )),
-                  ],
+                const SizedBox(
+                  height: 5,
                 ),
-              ),
-              ChooseGender(
-                sex: _sex,
-                onSex: (value) => setState(() {
-                  _sex = value;
-                }),
-              )
-            ],
-          ),
-        ),
+                ChooseGender(
+                  sex: _sex,
+                  dataFetched: dataFetched,
+                  onSex: (value) => setState(() {
+                    _sex = value;
+                  }),
+                )
+              ],
+            )),
         SizedBox(
           height: specs.screenHeight - 300,
           width: specs.screenWidth,
