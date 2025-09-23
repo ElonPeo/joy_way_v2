@@ -16,6 +16,7 @@ import 'package:joy_way/widgets/notifications/show_loading.dart';
 import '../../../config/general_specifications.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
 import '../../../widgets/notifications/show_notification.dart';
+import 'components/select_location_button.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -77,7 +78,6 @@ class _EditProfileState extends State<EditProfile> {
     _phoneNumberController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +159,10 @@ class _EditProfileState extends State<EditProfile> {
             loading.close(true);
             ShowNotification.showAnimatedSnackBar(
                 context, successMsg!, 3, const Duration(milliseconds: 500));
+            Future.delayed(const Duration(seconds: 1), () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            });
           }
         } catch (e) {
           loading.close(false);
@@ -427,10 +431,11 @@ class _EditProfileState extends State<EditProfile> {
                   titleInput: "Current address",
                   child: dataFetched
                       ? LoadingContainer(width: inputWidth - 150, height: 30)
-                      : SizedBox(
+                      : SelectLocationButton(
                           width: inputWidth - 110,
                           height: 30,
-                          child: Row(
+                          child: SizedBox(
+                              child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -453,6 +458,7 @@ class _EditProfileState extends State<EditProfile> {
                               )
                             ],
                           )),
+                        ),
                 ),
                 const SizedBox(
                   height: 5,

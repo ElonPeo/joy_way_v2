@@ -31,8 +31,9 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
   String? _avatarUrl;
   String? _bgUrl;
   String? _error;
-  final ImagePicker _picker = ImagePicker();
   bool _isLoaded = false;
+  final ImagePicker _picker = ImagePicker();
+
 
   bool _isProcessingAvatar = false;
   bool _isProcessingBg = false;
@@ -134,19 +135,17 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
     }
   }
 
-  ImageProvider _bgProvider() {
-    if (_bgImage != null) return FileImage(_bgImage!); // ưu tiên file local
-    if (_bgUrl != null && _bgUrl!.isNotEmpty)
-      return NetworkImage(_bgUrl!); // rồi tới URL
-    return const AssetImage(
-        'assets/background/backgroundEX.jpg'); // fallback asset
+  ImageProvider? _bgProvider() {
+    if (_bgImage != null) return FileImage(_bgImage!);
+    if (_bgUrl != null && _bgUrl!.isNotEmpty) return NetworkImage(_bgUrl!);
+    return null;
   }
 
-  ImageProvider _avatarProvider() {
+  ImageProvider? _avatarProvider() {
     if (_avatarImage != null) return FileImage(_avatarImage!);
     if (_avatarUrl != null && _avatarUrl!.isNotEmpty)
       return NetworkImage(_avatarUrl!);
-    return const AssetImage('assets/icons/other_icons/default_avatar.png');
+    return null;
   }
 
   @override
@@ -164,6 +163,9 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
                   width: specs.screenWidth,
                   imageProvider: _bgProvider(),
                   backgroundColor: Colors.white,
+                  child: Container(
+                    color: Colors.black12,
+                  ),
                 )
               : LoadingContainer(
                   height: 250,
@@ -202,36 +204,28 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
             child: Stack(
               children: [
                 _isLoaded
-                    ? GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => FullScreenImage(
-                                imageProvider: _avatarProvider(),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                              color: specs.backgroundColor,
-                              shape: BoxShape.circle),
-                          child: Center(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: SizedBox(
-                                  height: 96,
-                                  width: 96,
-                                  child: Image(
-                                      image: _avatarProvider(),
-                                      fit: BoxFit.cover)),
-                            ),
+                    ? Container(
+                  height: 106,
+                  width: 106,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle
+                      ),
+
+                      child: Center(
+                        child: CustomPhotoView(
+                            height: 100,
+                            width: 100,
+                            imageProvider: _avatarProvider(),
+                            backgroundColor: specs.black150,
+                            borderRadius: BorderRadius.circular(100),
+                            child: const ImageIcon(
+                              AssetImage("assets/icons/other_icons/user.png"),
+                              size: 30,
+                            )
                           ),
-                        ),
-                      )
+                      ),
+                    )
                     : LoadingContainer(
                         height: 100,
                         width: 100,

@@ -1,11 +1,21 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/screens/home/profile_screen/about_screen.dart';
+import 'package:joy_way/screens/home/profile_screen/basic_statistics.dart';
+import 'package:joy_way/screens/home/profile_screen/evaluate_screen.dart';
 import 'package:joy_way/screens/home/profile_screen/follow_button.dart';
 import 'package:joy_way/screens/home/profile_screen/middle_navigation_bar.dart';
-import 'package:joy_way/screens/home/profile_screen/setting_button/setting_button.dart';
+import 'package:joy_way/screens/home/profile_screen/post_screen.dart';
+import 'package:joy_way/screens/home/profile_screen/setting_button.dart';
+import 'package:joy_way/widgets/animated_container/loading_container.dart';
 import '../../../config/general_specifications.dart';
 import 'dart:ui' show ImageFilter;
+
+import '../../../services/firebase_services/profile_services/profile_fire_storage_image.dart';
+import '../../../services/firebase_services/profile_services/profile_firestore.dart';
+import '../../../widgets/photo_view/custom_photo_view.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isOwnerProfile;
@@ -19,20 +29,89 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ScrollController _c = ScrollController();
 
-  int _page = 0;
+  bool _dataFetched = false;
+  String? _name;
+  String? _userName;
+  String? _phoneNumber;
+  String? _sex;
+  String? _email;
+  DateTime? _dateOfBirth;
+  String? _currentAddress;
 
+  File? _avatarImage;
+  File? _bgImage;
+  String? _avatarUrl;
+  String? _bgUrl;
+  String? _error;
+  bool _isLoaded = false;
+
+  int _page = 1;
   double _scrollY = 0.0;
   double _backGroundHeight = 250.0;
-  double _middleBarPos = 330.0;
+  double _middleBarPos = 280.0;
   double _middleBarRadius = 20.0;
-  double _middleBarMargin = 40.0;
+  double _middleBarMargin = 60.0;
 
-  double _bgRadius = 40.0;
+  double _bgRadius = 60.0;
   double _blurSigma = 0.0;
+
+  ImageProvider? _bgProvider() {
+    if (_bgImage != null) return FileImage(_bgImage!);
+    if (_bgUrl != null && _bgUrl!.isNotEmpty) return NetworkImage(_bgUrl!);
+    return null;
+  }
+
+  ImageProvider? _avatarProvider() {
+    if (_avatarImage != null) return FileImage(_avatarImage!);
+    if (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+      return NetworkImage(_avatarUrl!);
+    return null;
+  }
+
+  Future<void> _loadUserInfo() async {
+    final result = await ProfileFirestore().getCurrentUserInformation();
+    if (result != null) {
+      setState(() {
+        _userName = result['userName'];
+        _name = result['name'];
+        _sex = result['sex'];
+        _email = result['email'];
+        _phoneNumber = result['phoneNumber'];
+        _dateOfBirth = result['dateOfBirth'];
+        _currentAddress = result['currentAddress'];
+      });
+    }
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _dataFetched = true;
+      });
+    });
+  }
+
+  Future<void> _loadCurrentUserImages() async {
+    final imgs =
+        await ProfileFireStorageImage().getCurrentUserAvatarAndBackgroundUrls();
+    if (!mounted) return;
+    if (imgs.error != null) {
+      setState(() => _error = imgs.error);
+    } else {
+      setState(() {
+        _avatarUrl = imgs.avatarUrl;
+        _bgUrl = imgs.bgUrl;
+      });
+    }
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _isLoaded = true;
+      });
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadUserInfo();
+    _loadCurrentUserImages();
     _c.addListener(_updateUIOnScroll);
   }
 
@@ -40,12 +119,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const double _kStart = 0.0;
   static const double _kEnd = 80.0;
   static const double _kStart2 = 80;
-  static const double _kEnd1 = 160.0;
+  static const double _kEnd1 = 110.0;
 
-  static const double _kR0 = 40.0;
+  static const double _kR0 = 60.0;
   static const double _kH0 = 250.0;
   static const double _kR1 = 20.0;
-  static const double _kH1 = 330.0;
+  static const double _kH1 = 280.0;
 
   static const double _kHMin = 170.0;
   static const double _kBlur0 = 12.0;
@@ -97,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : _kH1 - (y - _kStart);
     final t1 = _ease(_progress(y, _kStart2, _kEnd1));
     final double newRadius = _kR1 * (1.0 - t1);
-    final double newMargin = _kR0 * (1.0 - t1);
+    final double newMargin = 60 * (1.0 - t1);
     return (pos: newPos, radius: newRadius, margin: newMargin);
   }
 
@@ -116,6 +195,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ((y - _scrollY).abs() > eps);
   }
 
+  Widget _buildChild(GeneralSpecifications specs) {
+    switch (_page) {
+      case 0:
+        return PostScreen();
+      case 1:
+        return const AboutScreen();
+      case 2:
+        return EvaluateScreen();
+      default:
+        return PostScreen();
+    }
+  }
+
   @override
   void dispose() {
     _c.removeListener(_updateUIOnScroll);
@@ -126,118 +218,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
+    final child = _buildChild(specs);
     return Stack(
       children: [
         ListView(
           controller: _c,
           padding: EdgeInsets.zero,
           children: [
-            Container(
-              height: 330,
-              width: specs.screenWidth,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    height: 80,
-                    width: specs.screenWidth,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    // color: Colors.green,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Container(
-                          height: 50,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                color: specs.black200,
-                                width: 1,
-                                style: BorderStyle.solid,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "3420",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 19,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                "JOURNEY",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 10,
-                                    color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 70,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "461",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                "FOLLOWING",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 8,
-                                    color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 70,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "461",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                    color: Colors.black),
-                              ),
-                              Text(
-                                "FOLLOWERS",
-                                style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 8,
-                                    color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
             SizedBox(
-              height: 2000,
-              width: specs.screenWidth,
-              child: const Column(
-                children: [],
+              height: 340,
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
+              child: KeyedSubtree(
+                key: ValueKey<int>(_page),
+                child: child,
               ),
             )
           ],
@@ -246,20 +245,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             top: _middleBarPos,
             left: _middleBarMargin / 2,
             child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(
-                    _middleBarRadius,
-                  ),
-                  topRight: Radius.circular(
-                    _middleBarRadius,
-                  ),
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+                borderRadius: BorderRadius.circular(
+                  _middleBarRadius,
                 ),
                 child: Container(
                   height: 40,
                   width: specs.screenWidth - _middleBarMargin,
-                  color: specs.pantoneColor4,
+                  color: Colors.black,
                   child: MiddleNavigationBar(
                     page: _page,
                     onPage: (value) => setState(() => _page = value),
@@ -273,19 +265,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               bottomLeft: Radius.circular(_bgRadius),
               bottomRight: Radius.circular(_bgRadius),
             ),
-            child: Container(
+            child: SizedBox(
               height: _backGroundHeight,
               width: specs.screenWidth,
               child: Stack(
                 children: [
-                  SizedBox(
-                    height: _backGroundHeight,
-                    width: specs.screenWidth,
-                    child: Image.asset(
-                      "assets/background/backgroundEX.jpg",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  !_isLoaded
+                      ? LoadingContainer(
+                          height: _backGroundHeight,
+                          width: specs.screenWidth,
+                        )
+                      : CustomPhotoView(
+                          height: _backGroundHeight,
+                          width: specs.screenWidth,
+                          imageProvider: _bgProvider(),
+                          backgroundColor: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(_bgRadius),
+                            bottomRight: Radius.circular(_bgRadius),
+                          ),
+                          child: Container(
+                            color: specs.black240,
+                          ),
+                        ),
                   BackdropFilter(
                       filter: ImageFilter.blur(
                         sigmaX: _blurSigma,
@@ -305,27 +307,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              widget.isOwnerProfile
+                                  ? SizedBox()
+                                  : Icon(Icons.close),
+                              widget.isOwnerProfile
+                                  ? const SettingButton()
+                                  : FollowButton(),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                height: 80,
-                                width: 80,
+                                height: 90,
+                                width: 90,
                                 decoration: const BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle),
                                 child: Center(
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
-                                    child: Container(
-                                      height: 76,
-                                      width: 76,
-                                      color: specs.black200,
-                                      child: Image.asset(
-                                          "assets/background/photo-1633332755192-727a05c4013d.jpg"),
-                                    ),
+                                    child: !_isLoaded
+                                        ? const LoadingContainer(
+                                            width: 84, height: 84)
+                                        : CustomPhotoView(
+                                            height: 84,
+                                            width: 84,
+                                            imageProvider: _avatarProvider(),
+                                            backgroundColor: specs.black150,
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                            child: const ImageIcon(
+                                              AssetImage(
+                                                  "assets/icons/other_icons/user.png"),
+                                              size: 30,
+                                            )),
                                   ),
                                 ),
                               ),
-                              Container(
+                              SizedBox(
                                 width: specs.screenWidth * 0.6,
                                 height: 80,
                                 child: Column(
@@ -335,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       width: specs.screenWidth * 0.6,
                                       child: Text(
                                         textAlign: TextAlign.left,
-                                        "Louis Saville",
+                                        _name ?? "",
                                         style: GoogleFonts.outfit(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 19,
@@ -346,7 +368,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         width: specs.screenWidth * 0.6,
                                         child: Text(
                                           textAlign: TextAlign.left,
-                                          "@LouisSavi",
+                                          "@${_userName ?? ""}",
                                           style: GoogleFonts.outfit(
                                             fontWeight: FontWeight.w400,
                                             fontSize: 14,
@@ -357,35 +379,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Row(
-                                children: [
-                                  const ImageIcon(
-                                    AssetImage(
-                                        "assets/icons/other_icons/pin_map_solid.png"),
-                                    size: 12,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                    "Hadong, Hanoi",
-                                    style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 12,
-                                        color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                              widget.isOwnerProfile
-                                  ? SettingButton()
-                                  : FollowButton(),
                             ],
                           ),
                         ],

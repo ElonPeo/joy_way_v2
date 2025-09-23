@@ -70,7 +70,7 @@ class _SettingAndPrivacyState extends State<SettingAndPrivacy> {
                 iconColor: specs.rSlight,
                 hasBottomBorder: false,
                 onTap: () async {
-                  final result = await ShowConfirmNotification.showAnimatedSnackBar(
+                  final result = await ConfirmNotification.showAnimatedSnackBar(
                     context,
                     "Are you sure you want to log out?",
                     2,

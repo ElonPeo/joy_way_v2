@@ -38,7 +38,7 @@ class _FoundationOfHomeState extends State<FoundationOfHome> {
     final specs = GeneralSpecifications(context);
     final child = _buildChild(specs);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(245, 252, 255, 1),
+      backgroundColor: Color.fromRGBO(245, 245, 245, 1),
       extendBody: true,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),

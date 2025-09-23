@@ -26,7 +26,7 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
           onTap: () {
             widget.onPage(0);
           },
-          child: Container(
+          child: SizedBox(
             height: 46,
             width: 100,
             child: Column(
@@ -43,12 +43,12 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
                       fontWeight: widget.page == 0 ? FontWeight.w500 : FontWeight.w400
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 10,
                   child: Stack(
                       children: [
                     AnimatedPositioned(
-                      duration: const Duration(milliseconds: 200),
+                      duration: const Duration(milliseconds: 100),
                       bottom: widget.page == 0 ? -7 : -10,
                       left: 19 ,
                       child: Container(
@@ -72,7 +72,7 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
           onTap: () {
             widget.onPage(1);
           },
-          child: Container(
+          child: SizedBox(
             height: 46,
             width: 100,
             child: Column(
@@ -82,19 +82,19 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
                   height: 10,
                 ),
                 Text(
-                  "Statistical",
+                  "About",
                   style: GoogleFonts.outfit(
                       color: widget.page == 1 ? Colors.white : specs.black150,
                       fontSize: 14,
                       fontWeight: widget.page == 1 ? FontWeight.w500 : FontWeight.w400
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 10,
                   child: Stack(
                       children: [
                         AnimatedPositioned(
-                          duration: const Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 100),
                           bottom: widget.page == 1 ? -7 : -10,
                           left: 13 ,
                           child: Container(
@@ -118,7 +118,7 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
           onTap: () {
             widget.onPage(2);
           },
-          child: Container(
+          child: SizedBox(
             height: 46,
             width: 100,
             child: Column(
@@ -135,12 +135,12 @@ class _MiddleNavigationBarState extends State<MiddleNavigationBar> {
                       fontWeight: widget.page == 2 ? FontWeight.w500 : FontWeight.w400
                   ),
                 ),
-                Container(
+                SizedBox(
                   height: 10,
                   child: Stack(
                       children: [
                         AnimatedPositioned(
-                          duration: const Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 100),
                           bottom: widget.page == 2 ? -7 : -10,
                           left: 15 ,
                           child: Container(

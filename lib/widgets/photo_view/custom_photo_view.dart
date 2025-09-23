@@ -1,26 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-class CustomPhotoView extends StatelessWidget {
+class CustomPhotoView extends StatefulWidget {
   final ImageProvider? imageProvider;
   final double height;
   final double width;
   final Color backgroundColor;
+  final BorderRadius borderRadius;
+  final Widget child;
 
   const CustomPhotoView({
     super.key,
     required this.height,
     required this.width,
     required this.imageProvider,
+    required this.child,
+    this.borderRadius = const BorderRadius.all(Radius.circular(40)),
     this.backgroundColor = Colors.transparent,
   });
 
   @override
+  State<CustomPhotoView> createState() => _CustomPhotoViewState();
+}
+
+class _CustomPhotoViewState extends State<CustomPhotoView> {
+  @override
   Widget build(BuildContext context) {
-    final hasImg = imageProvider != null;
+    final hasImg = widget.imageProvider != null;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(40),
+      borderRadius: widget.borderRadius,
       child: GestureDetector(
         onTap: () {
           if (!hasImg) return;
@@ -28,18 +37,18 @@ class CustomPhotoView extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (_) => FullScreenImage(
-                imageProvider: imageProvider!,
+                imageProvider: widget.imageProvider!,
               ),
             ),
           );
         },
         child: Container(
-          height: height,
-          width: width,
-          color: backgroundColor,
+          height: widget.height,
+          width: widget.width,
+          color: widget.backgroundColor,
           child: hasImg
-              ? Image(image: imageProvider!, fit: BoxFit.cover)
-              : const SizedBox.shrink(),
+              ? Image(image: widget.imageProvider!, fit: BoxFit.cover)
+              : widget.child,
         ),
       ),
     );

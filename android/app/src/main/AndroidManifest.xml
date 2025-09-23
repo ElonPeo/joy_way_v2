@@ -1,4 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- (Bắt buộc) Quyền vị trí -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- (Tùy chọn) Nếu bạn muốn lấy vị trí ở nền (background) Android 10+ -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
+
+    <!-- (Khuyến nghị) Khai báo feature GPS để Play Store filter thiết bị -->
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
+
+
+
     <application
         android:label="joy_way"
         android:name="${applicationName}"

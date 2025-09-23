@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:joy_way/widgets/animated_container/animated_button.dart';
 
-class ShowConfirmNotification {
+class ConfirmNotification {
   static bool _isNotificationVisible = false;
 
   /// return: true = Confirm, false = Cancel, null = đang hiển thị cái khác
@@ -112,7 +112,7 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.dismissed) {
         final result = _pendingResult;
-        ShowConfirmNotification._isNotificationVisible = false;
+        ConfirmNotification._isNotificationVisible = false;
         if (!widget.completer.isCompleted) {
           widget.completer.complete(result);
         }
@@ -178,7 +178,6 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                       topRight: Radius.circular(30),
                     ),
                     child: Container(
-                      height: 165,
                       width: w,
                       color: Colors.white,
                       child: Stack(
@@ -200,6 +199,7 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const SizedBox(height: 10,),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -221,6 +221,7 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
+                                        const SizedBox(height: 10,),
                                         Text(
                                           _titles[widget.type],
                                           style: const TextStyle(
@@ -237,6 +238,7 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                                             fontSize: 13,
                                           ),
                                         ),
+                                        const SizedBox(height: 10,),
                                       ],
                                     ),
                                   ),
@@ -275,6 +277,7 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                                   ],
                                 ),
                               ),
+                              const SizedBox(height: 20,),
                             ],
                           ),
                         ],

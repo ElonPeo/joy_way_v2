@@ -152,7 +152,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                             style: GoogleFonts.outfit(
                                 color: Colors.black,
                                 fontSize: 25,
-                                fontWeight: FontWeight.w600),
+                                fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -172,13 +172,13 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                   bottomLeft: Radius.circular(15),
                   bottomRight: Radius.circular(15),
                 ),
-                clipBehavior: Clip.hardEdge, // << quan trọng: KHÔNG dùng WithSaveLayer
+                clipBehavior: Clip.hardEdge,
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     height: 90,
                     width: specs.screenWidth,
-                    color: Colors.white.withOpacity(0.6), // phủ mờ bên TRONG BackdropFilter
+                    color: const Color.fromRGBO(255, 255, 255, 0.7),
                     padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,7 +210,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),

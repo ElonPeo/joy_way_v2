@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(onPressed: () {
-              ShowConfirmNotification.showAnimatedSnackBar(
+              ConfirmNotification.showAnimatedSnackBar(
                   context,
                   "Are you sure you want to log out?",
                   2,

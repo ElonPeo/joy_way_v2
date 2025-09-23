@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
 enum ImageVisibility { public, private, restricted }
 
@@ -23,184 +24,195 @@ class ProfileFireStorageImage {
   final _auth = FirebaseAuth.instance;
   final _storage = FirebaseStorage.instance;
   final _firestore = FirebaseFirestore.instance;
+  final user = FirebaseAuth.instance.currentUser;
 
-// users/{uid}/personal/avatar/{imageId}.jpg
-// users/{uid}/personal/background/{imageId}.jpg
+  // Chuẩn hoá path
+  String _buildStoragePath({
+    required String uid,
+    required ImageType type,
+    required ImageVisibility visibility,
+    required String imageId,
+  }) {
+    final folder = switch (type) {
+      ImageType.avatar => 'avatar',
+      ImageType.background => 'background',
+      ImageType.message => 'message',
+      ImageType.post => 'post',
+    };
+    final scope = switch (visibility) {
+      ImageVisibility.public => 'public',
+      ImageVisibility.private => 'private',
+      ImageVisibility.restricted => 'restricted',
+    };
+    return 'users/$uid/$scope/$folder/$imageId';
+  }
+  // Up ảnh
+  Future<({
+  String imageId,
+  DocumentReference<Map<String, dynamic>> docRef,
+  Reference storageRef,
+  })> _uploadOne({
+    required String ownerUid,
+    required File file,
+    required ImageType type,
+    required ImageVisibility visibility,
+    required List<String> allowedUserIds,
+  }) async {
+    final imageId = _firestore.collection('images').doc().id;
+    final storagePath = _buildStoragePath(
+      uid: ownerUid,
+      type: type,
+      visibility: visibility,
+      imageId: imageId,
+    );
+    final storageRef = _storage.ref(storagePath);
+    // Metadata upload
+    final meta = SettableMetadata(
+      contentType: 'image/jpeg',
+      cacheControl: visibility == ImageVisibility.public
+          ? 'public, max-age=31536000, immutable'
+          : null,
+      customMetadata: {
+        'ownerUid': ownerUid,
+        'imageId': imageId,
+        'imageType': type.name,
+        'visibility': visibility.name,
+      },
+    );
+    await storageRef.putFile(file, meta);
+    // Lấy metadata đầy đủ để lưu Firestore
+    final fullMeta = await storageRef.getMetadata();
+    final docRef = _firestore.collection('images').doc(imageId);
+    await docRef.set({
+      'ownerUid': ownerUid,
+      'imageType': type.name,
+      'visibility': visibility.name,
+      'allowedUserIds': allowedUserIds,
+      'storagePath': storagePath,
+      'mimeType': fullMeta.contentType,
+      'size': fullMeta.size,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    return (imageId: imageId, docRef: docRef, storageRef: storageRef);
+  }
+
+
+  // Xoá an toàn nếu có lỗi
+  Future<String?> _safeDelete(
+      DocumentReference<Map<String, dynamic>>? d,
+      Reference? r,
+      ) async {
+    try {
+      if (d != null) {
+        await d.delete();
+      }
+    } catch (e) {
+      final msg = 'Failed to delete Firestore doc: ${d?.path}, error: $e';
+      return msg;
+    }
+    try {
+      if (r != null) {
+        await r.delete();
+      }
+    } catch (e) {
+      final msg = 'Failed to delete Storage file: ${r?.fullPath}, error: $e';
+      return msg;
+    }
+    return null;
+  }
+
+
+
+
+
   Future<String?> uploadAvatarAndBackgroundImages({
     File? avatarFile,
     File? backgroundFile,
     ImageVisibility visibility = ImageVisibility.public,
     List<String> allowedUserIds = const [],
   }) async {
-    final user = _auth.currentUser;
-    if (user == null) return 'User not logged in';
+    /// 1) Xác thực người dùng
+    final ownerUid = user?.uid;
+    if (ownerUid == null) return 'User not logged in';
+    if (avatarFile == null && backgroundFile == null) return null;
 
-    final ownerUid = user.uid;
-
-    // ---- helper: xóa theo imageId (doc + file)
-    Future<void> _deleteById(String imageId) async {
-      final docRef = _firestore.collection('images').doc(imageId);
-      try {
-        final snap = await docRef.get();
-        if (!snap.exists) {
-          // Không có doc — cố đoán đường dẫn mặc định và xóa file nếu có
-          // (tuỳ bạn: bỏ qua block này nếu bạn luôn tạo doc)
-          return;
-        }
-        final data = snap.data()!;
-        final String storagePath = data['storagePath'];
-        // Xóa file
-        try {
-          await _storage.ref().child(storagePath).delete();
-        } catch (_) {}
-        // Xóa doc
-        try {
-          await docRef.delete();
-        } catch (_) {}
-      } catch (_) {
-        // ignore best-effort
-      }
-    }
-
-    Future<({
-    String imageId,
-    DocumentReference<Map<String, dynamic>> docRef,
-    Reference storageRef,
-    })> _uploadOne(ImageType imageType, File file) async {
-      final docRef = _firestore.collection('images').doc();
-      final imageId = docRef.id;
-
-      final folder = imageType == ImageType.avatar ? 'avatar' : 'background';
-      final storagePath = 'users/$ownerUid/personal/$folder/$imageId.jpg';
-      final storageRef = _storage.ref().child(storagePath);
-
-      final meta = SettableMetadata(
-        contentType: 'image/jpeg',
-        customMetadata: {
-          'ownerUid': ownerUid,
-          'imageId': imageId,
-          'imageType': imageType.name,
-          'scope': 'personal',
-        },
-      );
-      await storageRef.putFile(file, meta);
-
-      final fullMeta = await storageRef.getMetadata();
-      await docRef.set({
-        'ownerUid': ownerUid,
-        'storagePath': storagePath,
-        'visibility': visibility.name,
-        'allowedUserIds': allowedUserIds,
-        'imageType': imageType.name,
-        'mimeType': fullMeta.contentType,
-        'size': fullMeta.size,
-        'scope': 'personal',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      return (imageId: imageId, docRef: docRef, storageRef: storageRef);
-    }
-
+    /// 2) Thực hiện upload
     ({
-    String? avatarId,
-    String? bgId,
     DocumentReference<Map<String, dynamic>>? avatarDoc,
     DocumentReference<Map<String, dynamic>>? bgDoc,
     Reference? avatarRef,
     Reference? bgRef,
-    }) acc = (
-    avatarId: null,
-    bgId: null,
-    avatarDoc: null,
-    bgDoc: null,
-    avatarRef: null,
-    bgRef: null,
-    );
-
-    Future<void> _safeDelete(
-        DocumentReference<Map<String, dynamic>>? d,
-        Reference? r,
-        ) async {
-      try { if (d != null) await d.delete(); } catch (_) {}
-      try { if (r != null) await r.delete(); } catch (_) {}
-    }
+    String? newAvatarId,
+    String? newBgId,
+    }) acc = (avatarDoc: null, bgDoc: null, avatarRef: null, bgRef: null, newAvatarId: null, newBgId: null);
 
     try {
-      if (avatarFile == null && backgroundFile == null) return null;
-
-      // --- Lấy ID cũ trước khi upload
-      final userDoc = await _firestore.collection('users').doc(ownerUid).get();
-      final prevAvatarId = userDoc.data()?['avatarImageId'] as String?;
-      final prevBgId     = userDoc.data()?['backgroundImageId'] as String?;
-
-      // --- Upload (có thể song song)
+      // Upload song song
       final futures = <Future<void>>[];
-
       if (avatarFile != null) {
         futures.add(() async {
-          final r = await _uploadOne(ImageType.avatar, avatarFile);
+          final r = await _uploadOne(
+            ownerUid: ownerUid,
+            file: avatarFile,
+            type: ImageType.avatar,
+            visibility: visibility,
+            allowedUserIds: allowedUserIds,
+          );
           acc = (
-          avatarId: r.imageId,
-          bgId: acc.bgId,
           avatarDoc: r.docRef,
           bgDoc: acc.bgDoc,
           avatarRef: r.storageRef,
           bgRef: acc.bgRef,
+          newAvatarId: r.imageId,
+          newBgId: acc.newBgId,
           );
         }());
       }
 
       if (backgroundFile != null) {
         futures.add(() async {
-          final r = await _uploadOne(ImageType.background, backgroundFile);
+          final r = await _uploadOne(
+            ownerUid: ownerUid,
+            file: backgroundFile,
+            type: ImageType.background,
+            visibility: visibility,
+            allowedUserIds: allowedUserIds,
+          );
           acc = (
-          avatarId: acc.avatarId,
-          bgId: r.imageId,
           avatarDoc: acc.avatarDoc,
           bgDoc: r.docRef,
           avatarRef: acc.avatarRef,
           bgRef: r.storageRef,
+          newAvatarId: acc.newAvatarId,
+          newBgId: r.imageId,
           );
         }());
       }
 
       await Future.wait(futures, eagerError: true);
 
-      // --- Update user với ID mới
+      // Cập nhật pointer trong users/{uid}
       final update = <String, dynamic>{
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      if (acc.avatarId != null) update['avatarImageId'] = acc.avatarId;
-      if (acc.bgId != null) update['backgroundImageId'] = acc.bgId;
+      if (acc.newAvatarId != null) update['avatarImageId'] = acc.newAvatarId;
+      if (acc.newBgId != null) update['backgroundImageId'] = acc.newBgId;
 
       if (update.length > 1) {
-        await _firestore.collection('users').doc(ownerUid).set(
-          update,
-          SetOptions(merge: true),
-        );
+        await _firestore.collection('users').doc(ownerUid).set(update, SetOptions(merge: true));
       }
 
-      // --- Xóa ảnh cũ (best-effort, sau khi thành công)
-      final deleteFutures = <Future<void>>[];
-      if (avatarFile != null && prevAvatarId != null && prevAvatarId != acc.avatarId) {
-        deleteFutures.add(_deleteById(prevAvatarId));
-      }
-      if (backgroundFile != null && prevBgId != null && prevBgId != acc.bgId) {
-        deleteFutures.add(_deleteById(prevBgId));
-      }
-      if (deleteFutures.isNotEmpty) {
-        // không cần eagerError; tránh fail toàn bộ chỉ vì cleanup
-        await Future.wait(deleteFutures);
-      }
-
-      return null; // thành công
+      return null; // success
     } catch (e) {
-      // rollback ảnh mới vừa tạo
       await _safeDelete(acc.avatarDoc, acc.avatarRef);
       await _safeDelete(acc.bgDoc, acc.bgRef);
       return 'Upload avatar/background failed: $e';
     }
   }
+
+
+
 
 
 
