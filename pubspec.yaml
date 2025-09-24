@@ -81,6 +81,7 @@ flutter:
     - assets/
     - assets/background/
     - assets/icons/
+    - assets/icons/map/
     - assets/icons/authentication/
     - assets/icons/account_link/
     - assets/icons/bottom_bar/

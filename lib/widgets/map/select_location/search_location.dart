@@ -10,6 +10,8 @@ import '../../animated_container/animated_icon_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../notifications/show_notification.dart';
+
 class SearchLocation extends StatefulWidget {
 
   final Function(GeoPoint?) onLonLatGeoPoint;
@@ -34,15 +36,26 @@ class _SearchLocationState extends State<SearchLocation> {
   List<Map<String, dynamic>> results = [];
   final TextEditingController _controller = TextEditingController();
 
-  Future<void> searchPlace(String query) async {
+
+  Future<void> searchPlace(String query, {bool searchPOI = true}) async {
     final q = Uri.encodeComponent(query.trim());
+    const vnBbox = "102.144,8.179,109.469,23.392";
     if (q.isEmpty) {
       setState(() => results = []);
       return;
     }
 
-    final url = "https://api.mapbox.com/geocoding/v5/mapbox.places/$q.json"
-        "?access_token=${MapboxConfig.accessToken}&limit=5&language=vi";
+
+    final url =
+        "https://api.mapbox.com/geocoding/v5/mapbox.places/$q.json"
+        "?access_token=${MapboxConfig.accessToken}"
+        "&limit=8"
+        "&language=vi"
+        "&bbox=$vnBbox"
+        "&country=VN"
+        "&autocomplete=true"
+        "&fuzzyMatch=true";
+
     final res = await http.get(Uri.parse(url));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -53,6 +66,9 @@ class _SearchLocationState extends State<SearchLocation> {
       debugPrint("Search failed: ${res.statusCode} ${res.body}");
     }
   }
+
+
+
 
 
   @override
