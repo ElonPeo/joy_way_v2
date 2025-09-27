@@ -26,8 +26,8 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   static const double padding = 40.0;
   bool _submitting = false;
-  Curve _curves = Curves.easeOutBack;
-  Duration _duration = const Duration(milliseconds: 800);
+  final Curve _curves = Curves.easeOutBack;
+  final Duration _duration = const Duration(milliseconds: 800);
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -77,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!isValid) {
       final mess = Authentication().validateInputRegister(email, password);
       ShowNotification.showAnimatedSnackBar(
-          context, mess, 0, Duration(milliseconds: 300));
+          context, mess, 0, const Duration(milliseconds: 300));
     } else {
       widget.onScaleForLoading(true);
       await Future.delayed(const Duration(milliseconds: 2000));

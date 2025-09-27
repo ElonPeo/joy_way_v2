@@ -1,45 +1,116 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/services/data_processing/time_processing.dart';
+import 'package:joy_way/widgets/map/view/photo_map_url_view.dart';
 
 import '../../../config/general_specifications.dart';
+import '../../../services/mapbox_services/mapbox_config.dart';
 
 class AboutScreen extends StatefulWidget {
-  const AboutScreen({super.key});
+  final String? name;
+  final String? userName;
+  final String? phoneNumber;
+  final String? sex;
+  final String? email;
+  final DateTime? dateOfBirth;
+  final GeoPoint? livingCoordinate;
+  final List<String>? socialLinks;
+  final String? livingPlace;
+
+  const AboutScreen({
+    super.key,
+    required this.name,
+    required this.userName,
+    required this.phoneNumber,
+    required this.sex,
+    required this.email,
+    required this.dateOfBirth,
+    required this.livingCoordinate,
+    required this.socialLinks,
+    required this.livingPlace,
+  });
 
   @override
   State<AboutScreen> createState() => _AboutScreenState();
 }
 
 class _AboutScreenState extends State<AboutScreen> {
+
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        Container(
+          width: specs.screenWidth - 20,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Social links",
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.black),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Column(
+                children: List.generate(
+                  widget.socialLinks?.length ?? 0,
+                  (index) => Row(
+                    children: [
+                      const ImageIcon(
+                        AssetImage("assets/icons/user_infor/link-alt.png"),
+                        size: 16,
+                        color: Colors.black,
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: specs.screenWidth - 100,
+                        child: Text(
+                          widget.socialLinks![index],
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 30,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              height: 170,
               width: specs.screenWidth - 20,
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(20)),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 140,
-                    margin: EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                        border: Border(
-                      right: BorderSide(
-                        color: specs.black200,
-                        width: 1,
-                        style: BorderStyle.solid,
-                      ),
-                    )),
+                    padding: const EdgeInsets.only(left: 5),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,45 +122,50 @@ class _AboutScreenState extends State<AboutScreen> {
                               fontSize: 14,
                               color: Colors.black),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
                         Row(
                           children: [
                             ImageIcon(
-                              AssetImage(
+                              const AssetImage(
                                   "assets/icons/user_infor/envelope.png"),
                               size: 16,
                               color: specs.black100,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
-                            Text(
-                              "a@gmail.com",
-                              style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12,
-                                  color: Colors.black),
+                            SizedBox(
+                              width: specs.screenWidth - 220,
+                              child: Text(
+                                widget.email ?? '',
+                                style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    color: Colors.black),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Row(
                           children: [
                             ImageIcon(
-                              AssetImage(
+                              const AssetImage(
                                   "assets/icons/user_infor/circle-phone-flip.png"),
                               size: 16,
                               color: specs.black100,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             Text(
-                              "0973941815",
+                              widget.phoneNumber ?? '',
                               style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 12,
@@ -97,89 +173,45 @@ class _AboutScreenState extends State<AboutScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Row(
                           children: [
                             ImageIcon(
-                              AssetImage("assets/icons/user_infor/sex.png"),
+                              const AssetImage("assets/icons/user_infor/dob.png"),
                               size: 16,
                               color: specs.black100,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             Text(
-                              "Male",
+                              TimeProcessing.dateToString(widget.dateOfBirth) ??
+                                  '',
                               style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 12,
                                   color: Colors.black),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Social links",
-                        style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                            color: Colors.black),
+                  Container(
+                    height: 140,
+                    width: 140,
+                    child: Center(
+                      child: PhotoMapUrlView(
+                          geoPoint: widget.livingCoordinate,
+                          height: 140,
+                          width: 140,
+                          mapboxToken: MapboxConfig.accessToken,
+                          address: widget.livingPlace,
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          ImageIcon(
-                            AssetImage("assets/icons/user_infor/link-alt.png"),
-                            size: 16,
-                            color: specs.black100,
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            "a@gmail.com",
-                            style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 12,
-                                color: Colors.black),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              height: 250,
-              width: specs.screenWidth - 80,
-              child: Stack(
-                children: [
-
-                  SizedBox(
-                    height: 250,
-                    width: specs.screenWidth - 80,
-                    child: Image.asset("assets/background/backgroundEX.jpg", fit: BoxFit.cover,),
-                  ),
-                  CustomPaint(
-                    size: Size(specs.screenWidth - 80, 250),
-                    painter: UserInformationPainter(),
-                  ),
+                    ),
+                  )
                 ],
               ),
             ),
@@ -193,9 +225,9 @@ class _AboutScreenState extends State<AboutScreen> {
   }
 }
 
-class UserInformationPainter extends CustomPainter {
-  UserInformationPainter({
-    this.borderRadius = 40,
+class MapPainter extends CustomPainter {
+  MapPainter({
+    this.borderRadius = 30,
   });
 
   final double borderRadius;
@@ -204,7 +236,7 @@ class UserInformationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..isAntiAlias = true
-      ..color =  Color.fromRGBO(245,245,245, 1)
+      ..color = Color.fromRGBO(245, 245, 245, 1)
       ..style = PaintingStyle.fill;
 
     final path = Path();

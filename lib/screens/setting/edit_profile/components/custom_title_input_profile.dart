@@ -13,27 +13,23 @@ class CustomTitleInputProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
     double inputWidth = specs.screenWidth - 60;
-    return SizedBox(
+    return Container(
       width: inputWidth,
-      height: 30,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 2.5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 110,
-                child: Text(
-                  textAlign: TextAlign.left,
-                  titleInput,
-                  style: GoogleFonts.outfit(
-                      fontSize: 14, color: const Color.fromRGBO(100, 100, 100, 1)),
-                ),
-              ),
-              child
-            ],
+          SizedBox(
+            width: 110,
+            child: Text(
+              textAlign: TextAlign.left,
+              titleInput,
+              style: GoogleFonts.outfit(
+                  fontSize: 14, color: const Color.fromRGBO(100, 100, 100, 1)),
+            ),
           ),
+          child
         ],
       ),
     );

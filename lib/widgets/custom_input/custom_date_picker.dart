@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:rive/rive.dart';
 import '../../config/general_specifications.dart';
 import '../animated_container/animated_button.dart';
 import '../animated_container/animated_icon_button.dart';

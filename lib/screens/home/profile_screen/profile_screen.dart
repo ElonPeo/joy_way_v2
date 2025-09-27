@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/screens/home/profile_screen/about_screen.dart';
@@ -28,6 +30,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ScrollController _c = ScrollController();
+  final GlobalKey _switcherKey = GlobalKey();
 
   bool _dataFetched = false;
   String? _name;
@@ -36,7 +39,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _sex;
   String? _email;
   DateTime? _dateOfBirth;
-  String? _currentAddress;
+  GeoPoint? _livingCoordinate;
+  List <String>? _socialLinks;
+  String? _livingPlace;
+
+
+
 
   File? _avatarImage;
   File? _bgImage;
@@ -45,15 +53,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _error;
   bool _isLoaded = false;
 
-  int _page = 1;
+  int _page = 0;
   double _scrollY = 0.0;
   double _backGroundHeight = 250.0;
   double _middleBarPos = 280.0;
   double _middleBarRadius = 20.0;
   double _middleBarMargin = 60.0;
-
   double _bgRadius = 60.0;
   double _blurSigma = 0.0;
+  bool _isSnapping = false;
+  Timer? _snapDebounce;
+  static const double _minKeep = 80.0;
+  static const double _maxKeep = 110.0;
 
   ImageProvider? _bgProvider() {
     if (_bgImage != null) return FileImage(_bgImage!);
@@ -69,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    final result = await ProfileFirestore().getCurrentUserInformation();
+    final result = await ProfileFirestore().getCurrentUserInformation(context);
     if (result != null) {
       setState(() {
         _userName = result['userName'];
@@ -78,7 +89,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _email = result['email'];
         _phoneNumber = result['phoneNumber'];
         _dateOfBirth = result['dateOfBirth'];
-        _currentAddress = result['currentAddress'];
+        _socialLinks = result['socialLinks'];
+        _livingCoordinate = result['livingCoordinate'];
+        _livingPlace = result['livingPlace'];
       });
     }
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -129,24 +142,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const double _kHMin = 170.0;
   static const double _kBlur0 = 12.0;
 
+  void _switchPage(int value) async {
+    if (_c.hasClients && _c.offset > 0) {
+      await _c.animateTo(
+        0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    }
+    if (!mounted) return;
+    setState(() => _page = value);
+  }
+
   void _updateUIOnScroll() {
-    final y = _c.hasClients ? _c.offset : 0.0;
+    if (!_c.hasClients) return;
+
+    final y = _c.offset;
     final clamped = math.max(0.0, y);
+
     final bg = _calcBackground(clamped);
     final mid = _calcMiddleBar(clamped);
+
     if (_shouldRebuild(bg, mid, clamped)) {
       setState(() {
         _scrollY = clamped;
-
         _backGroundHeight = bg.height;
         _bgRadius = bg.radius;
         _blurSigma = bg.blurSigma;
-
         _middleBarPos = mid.pos;
         _middleBarRadius = mid.radius;
         _middleBarMargin = mid.margin;
       });
     }
+
+    // Tự động lướt khi trong khoảng này
+    _snapDebounce?.cancel();
+    _snapDebounce = Timer(const Duration(milliseconds: 120), () {
+      if (!mounted || !_c.hasClients || _isSnapping) return;
+      final off = _c.offset;
+      // chỉ snap khi đang ở vùng (80,110)
+      if (off > _minKeep && off < _maxKeep) {
+        final mid = (_minKeep + _maxKeep) / 2.0;
+        final target = (off >= mid) ? _maxKeep + 1 : _minKeep;
+        _isSnapping = true;
+        _c
+            .animateTo(target,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut)
+            .whenComplete(() => _isSnapping = false);
+      }
+    });
   }
 
   double _progress(double value, double start, double end) {
@@ -198,13 +243,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildChild(GeneralSpecifications specs) {
     switch (_page) {
       case 0:
-        return PostScreen();
+        return const PostScreen();
       case 1:
-        return const AboutScreen();
+        return  AboutScreen(
+            name: _name,
+            userName: _userName,
+            phoneNumber: _phoneNumber,
+            sex: _sex,
+            email: _email,
+            dateOfBirth: _dateOfBirth,
+            livingCoordinate: _livingCoordinate,
+            livingPlace: _livingPlace,
+            socialLinks: _socialLinks);
       case 2:
-        return EvaluateScreen();
+        return const EvaluateScreen();
       default:
-        return PostScreen();
+        return const PostScreen();
     }
   }
 
@@ -225,20 +279,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: _c,
           padding: EdgeInsets.zero,
           children: [
-            SizedBox(
+            const SizedBox(
               height: 340,
             ),
             AnimatedSwitcher(
+              key: _switcherKey,
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, anim) =>
-                  FadeTransition(opacity: anim, child: child),
+              layoutBuilder: (currentChild, previousChildren) {
+                return Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: [
+                    ...previousChildren,
+                    if (currentChild != null) currentChild
+                  ],
+                );
+              },
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SizeTransition(
+                  sizeFactor: anim,
+                  axisAlignment: -1.0, // neo từ đỉnh
+                  child: child,
+                ),
+              ),
               child: KeyedSubtree(
                 key: ValueKey<int>(_page),
                 child: child,
               ),
-            )
+            ),
           ],
         ),
         Positioned(
@@ -254,7 +325,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.black,
                   child: MiddleNavigationBar(
                     page: _page,
-                    onPage: (value) => setState(() => _page = value),
+                    onPage: (value) => _switchPage(value),
                   ),
                 ))),
         Positioned(
@@ -310,11 +381,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               widget.isOwnerProfile
-                                  ? SizedBox()
-                                  : Icon(Icons.close),
+                                  ? const SizedBox()
+                                  : const Icon(Icons.close),
                               widget.isOwnerProfile
                                   ? const SettingButton()
-                                  : FollowButton(),
+                                  : const FollowButton(),
                             ],
                           ),
                           Row(
@@ -362,13 +433,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontWeight: FontWeight.w600,
                                             fontSize: 19,
                                             color: Colors.white),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
                                     ),
                                     SizedBox(
                                         width: specs.screenWidth * 0.6,
                                         child: Text(
                                           textAlign: TextAlign.left,
-                                          "@${_userName ?? ""}",
+                                          _userName == null ? "" : "@${_userName}",
                                           style: GoogleFonts.outfit(
                                             fontWeight: FontWeight.w400,
                                             fontSize: 14,

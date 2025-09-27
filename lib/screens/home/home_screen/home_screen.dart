@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
                   "Are you sure you want to log out?",
                   2,
               );
-            }, icon: Icon(Icons.abc, size: 30,)),
+            }, icon: const Icon(Icons.abc, size: 30,)),
           ],
         )
     );

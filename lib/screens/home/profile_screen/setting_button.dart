@@ -157,7 +157,7 @@ class _SettingButtonState extends State<SettingButton> {
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeOutQuart,
                               beginOffset: const Offset(1, 0),
-                              child: SettingAndPrivacy()
+                              child: const SettingAndPrivacy()
                           );
                         },
                         height: 50,

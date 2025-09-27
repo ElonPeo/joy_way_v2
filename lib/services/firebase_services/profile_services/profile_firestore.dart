@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:joy_way/services/data_processing/data_processing.dart';
+import 'package:joy_way/widgets/notifications/show_notification.dart';
 
 class ProfileFirestore {
   final _auth = FirebaseAuth.instance;
@@ -9,7 +12,7 @@ class ProfileFirestore {
   String? get _email => _user?.email;
   bool get isLoggedIn => _user != null;
 
-
+  /// Kiểm trá tính hợp lệ của số điện thoại
   int checkValidPhoneNumber(String phoneNumber) {
     final clean = phoneNumber.replaceAll(RegExp(r'\s+'), '');
     if (!RegExp(r'^(03|05|07|08|09)\d{8}$').hasMatch(clean)) {
@@ -17,6 +20,7 @@ class ProfileFirestore {
     }
     return 1;
   }
+
 
   List<String> generateSearchKeywords(String value) {
     final v = value.trim().toLowerCase();
@@ -28,7 +32,7 @@ class ProfileFirestore {
     return keywords;
   }
 
-
+  /// kieemr tra sự tồn tại của user
   Future<bool> checkUserExists(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get().timeout(
@@ -41,57 +45,62 @@ class ProfileFirestore {
     }
   }
 
-  Future<Map<String, dynamic>?> getUserInformation(String uid) async {
-    try {
-      final doc = await _db.collection('users').doc(uid).get();
-      if (!doc.exists) return null;
 
-      final data = doc.data() as Map<String, dynamic>;
-      return {
-        'userName': data['userName'],
-        'name': data['name'],
-        'sex': data['sex'],
-        'phoneNumber': data['phoneNumber'],
-        'dateOfBirth': data['dateOfBirth'] != null
-            ? (data['dateOfBirth'] as Timestamp).toDate()
-            : null,
-        'currentAddress': data['currentAddress'],
-      };
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> getCurrentUserInformation() async {
+  Future<Map<String, dynamic>?> getCurrentUserInformation(BuildContext context) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
-
-      final doc = await FirebaseFirestore.instance
+      final snap = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
-
-      if (!doc.exists) return null;
-
-      final data = doc.data() as Map<String, dynamic>;
+      if (!snap.exists) return null;
+      final data = snap.data();
+      if (data == null) return null;
+      DateTime? dob;
+      final dobRaw = data['dateOfBirth'];
+      if (dobRaw is Timestamp) dob = dobRaw.toDate();
+      if (dobRaw is DateTime) dob = dobRaw;
+      GeoPoint? living;
+      final lc = data['livingCoordinate'];
+      if (lc is GeoPoint) {
+        living = lc;
+      } else if (lc is Map) {
+        final lat = (lc['latitude'] ?? lc['lat']);
+        final lng = (lc['longitude'] ?? lc['lng']);
+        if (lat is num && lng is num) {
+          living = GeoPoint(lat.toDouble(), lng.toDouble());
+        }
+      }
+      List<String>? links;
+      final linksRaw = data['socialLinks'];
+      if (linksRaw is List) {
+        links = linksRaw
+            .map((e) => (e ?? '').toString().trim())
+            .where((s) => s.isNotEmpty)
+            .take(3)
+            .toList();
+        if (links.isEmpty) links = null;
+      }
       return {
-        'userName': data['userName'],
-        'name': data['name'],
-        'sex': data['sex'],
-        'phoneNumber': data['phoneNumber'],
-        'dateOfBirth': data['dateOfBirth'] != null
-            ? (data['dateOfBirth'] as Timestamp).toDate()
-            : null,
-        'currentAddress': data['currentAddress'],
-        'email': data['email'],
+        'userName': data['userName'] as String?,
+        'name': data['name'] as String?,
+        'sex': data['sex'] as String?,
+        'phoneNumber': data['phoneNumber'] as String?,
+        'dateOfBirth': dob,
+        'livingPlace': data['livingPlace'] as String?,
+        'livingCoordinate': living,
+        'email': data['email'] as String?,
+        'socialLinks': links,
       };
     } catch (e) {
+      ShowNotification.showAnimatedSnackBar(context,  'Error: ${e.toString()}' , 2, const Duration(milliseconds: 500));
       return null;
     }
   }
 
 
+  /// lấy thông tin user khác dựa vào uid
   Future<Map<String, dynamic>?> getOtherUserInformationByUid(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
@@ -105,13 +114,15 @@ class ProfileFirestore {
         'dateOfBirth': data['dateOfBirth'] != null
             ? (data['dateOfBirth'] as Timestamp).toDate()
             : null,
-        'currentAddress': data['currentAddress'],
+        'livingPlace': data['livingPlace'],
+        'livingCoordinate': data['livingCoordinate'],
+        'socialLinks': data['socialLinks']
       };
     } catch (e) {
       return null;
     }
   }
-
+  /// Kiểm tra sự tồn tại của userName
   Future<bool> checkUserNameExists(String userName) async {
     try {
       final currentUid = _uid;
@@ -126,7 +137,7 @@ class ProfileFirestore {
       return true;
     }
   }
-
+  /// kiểm tra thông tin trước khi gửi yêu cầu lưu dữ liệu
   Future<String?> checkInformationBeforeSending(
       String? userName,
       String? phoneNumber,
@@ -160,32 +171,36 @@ class ProfileFirestore {
   }
 
 
-  // ==== Writes ====
+  /// tạo thông tin user
   Future<String?> createUserInformation({
     required String email,
     required String userId,
+    GeoPoint? livingCoordinate,
+    String? livingPlace,
     String? userName,
     String? name,
     String? sex,
     String? phoneNumber,
     DateTime? dateOfBirth,
-    String? currentAddress,
+    List<String>? socialLinks,
   }) async {
     try {
       final docRef = _db.collection('users').doc(userId);
-
+      final cleanedLinks = DataProcessing.sanitizeLinks(socialLinks);
       final data = <String, dynamic>{
         'email': email,
         'userId': userId,
         'userName': userName,
-        'searchKeywords': userName != null
-            ? generateSearchKeywords(userName)
-            : null,
+        'searchKeywords':
+        userName != null ? generateSearchKeywords(userName) : null,
         'name': name,
         'sex': sex,
         'phoneNumber': phoneNumber,
-        'dateOfBirth': dateOfBirth != null ? Timestamp.fromDate(dateOfBirth) : null,
-        'currentAddress': currentAddress,
+        'dateOfBirth':
+        dateOfBirth != null ? Timestamp.fromDate(dateOfBirth) : null,
+        'livingCoordinate': livingCoordinate,
+        'livingPlace': livingPlace,
+        'socialLinks': cleanedLinks,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }..removeWhere((k, v) => v == null);
@@ -197,23 +212,28 @@ class ProfileFirestore {
     }
   }
 
+  /// cập nhật thông tin user
   Future<String?> updateUserInformation({
-
     String? name,
     String? sex,
     String? phoneNumber,
     DateTime? dateOfBirth,
-    String? currentAddress,
+    String? livingPlace,
+    GeoPoint? livingCoordinate,
+    List<String>? socialLinks,
   }) async {
     try {
       final uid = _uid;
+      final cleanedLinks = DataProcessing.sanitizeLinks(socialLinks);
       if (uid == null) return "NOT_LOGGED_IN";
       final data = <String, dynamic>{
         if (name != null) 'name': name,
         if (sex != null) 'sex': sex,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
         if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth),
-        if (currentAddress != null) 'currentAddress': currentAddress,
+        if (livingPlace != null) 'livingPlace': livingPlace,
+        if (livingCoordinate != null) 'livingCoordinate': livingCoordinate,
+        if (socialLinks != null) 'socialLinks': cleanedLinks,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -223,14 +243,16 @@ class ProfileFirestore {
       return "Update failed: $e";
     }
   }
-
+  /// chỉnh sửa thông tin user nếu tồn tại thì cập nhật nếu chưa thì tạo mới
   Future<String?> editProfile({
     required String? userName,
     required String? name,
     required String? sex,
     required String? phoneNumber,
     required DateTime? dateOfBirth,
-    required String? currentAddress,
+    required String? livingPlace,
+    required GeoPoint? livingCoordinate,
+    required List<String>? socialLinks,
   }) async {
     try {
       // 1) kiểm tra đăng nhập
@@ -245,7 +267,9 @@ class ProfileFirestore {
           sex: sex,
           phoneNumber: phoneNumber,
           dateOfBirth: dateOfBirth,
-          currentAddress: currentAddress,
+          livingPlace: livingPlace,
+          livingCoordinate: livingCoordinate,
+          socialLinks: socialLinks,
         );
       } else {
         return await createUserInformation(
@@ -256,7 +280,9 @@ class ProfileFirestore {
           sex: sex,
           phoneNumber: phoneNumber,
           dateOfBirth: dateOfBirth,
-          currentAddress: currentAddress,
+          livingPlace: livingPlace,
+          livingCoordinate: livingCoordinate,
+          socialLinks: socialLinks,
         );
       }
     } catch (e) {

@@ -127,14 +127,14 @@ class _FullScreenImageState extends State<FullScreenImage> {
                         onTap: () => Navigator.pop(context),
                         child: Container(
                             decoration: BoxDecoration(
-                                color: Color.fromRGBO(0, 0, 0, 0.5),
+                                color: const Color.fromRGBO(0, 0, 0, 0.5),
                                 borderRadius: BorderRadius.circular(100)
                             ),
                             height: 35,
                             width: 35,
-                            child: Center(
+                            child: const Center(
                               child: ImageIcon(
-                                AssetImage(
+                                 AssetImage(
                                     "assets/icons/other_icons/cross-small.png"),
                                 color: Colors.white,
                                 size: 30,
@@ -142,9 +142,9 @@ class _FullScreenImageState extends State<FullScreenImage> {
                             )),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10,vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 3),
                         decoration: BoxDecoration(
-                            color: Color.fromRGBO(0, 0, 0, 0.5),
+                            color: const Color.fromRGBO(0, 0, 0, 0.5),
                             borderRadius: BorderRadius.circular(100)
                         ),
                         child: Row(

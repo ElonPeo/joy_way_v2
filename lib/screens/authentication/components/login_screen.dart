@@ -31,8 +31,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   static const double padding = 40.0;
-  Curve _curves = Curves.easeOutBack;
-  Duration _duration = const Duration(milliseconds: 800);
+  final Curve _curves = Curves.easeOutBack;
+  final Duration _duration = const Duration(milliseconds: 800);
 
   /// value
   final TextEditingController emailController = TextEditingController();
@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!isValid) {
       final mess = auth.validateInputSignIn(email, password);
       ShowNotification.showAnimatedSnackBar(
-          context, mess, 0, Duration(milliseconds: 300));
+          context, mess, 0, const Duration(milliseconds: 300));
     } else {
       widget.onScaleForLoading(true);
       await Future.delayed(const Duration(milliseconds: 2000));

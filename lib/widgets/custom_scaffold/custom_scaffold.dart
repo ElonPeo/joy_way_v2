@@ -28,8 +28,6 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   static const Curve kCurve = Curves.easeOut;
 
   bool _snapping = false;
-
-
   double? _snapTarget;
 
   double get _y => _c.hasClients ? _c.offset : 0.0;
@@ -224,7 +222,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                           fontSize: 18,
                           color: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          textColor: specs.pantoneColor4,
+                          textColor: Colors.black,
                           fontWeight: FontWeight.w500,
                           onTap: () async {
                             if (widget.onConfirm != null) {

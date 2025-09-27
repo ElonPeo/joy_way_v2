@@ -26,7 +26,7 @@ class _ChooseGenderState extends State<ChooseGender> {
     return CustomTitleInputProfile(
       titleInput: "Sex",
       child: widget.dataFetched
-          ? LoadingContainer(width: 50, height: 30)
+          ? const LoadingContainer(width: 50, height: 30)
           : CustomSelect(
               child: SizedBox(
                   width: specs.screenWidth - 170,

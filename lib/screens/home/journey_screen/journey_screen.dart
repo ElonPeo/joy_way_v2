@@ -3,6 +3,8 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../../config/general_specifications.dart';
 
 class JourneyScreen extends StatelessWidget {
+  const JourneyScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
@@ -10,7 +12,7 @@ class JourneyScreen extends StatelessWidget {
       height: specs.screenHeight,
       width: specs.screenWidth,
       color: Colors.red,
-      child: SimplePoiTap(),
+      child: const SimplePoiTap(),
     );
   }
 }

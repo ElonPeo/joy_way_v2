@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:joy_way/widgets/animated_container/animated_blur_overlay.dart';
 
 import '../../config/general_specifications.dart';
 
@@ -150,9 +149,9 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                   const yOffset = 13.0;
                   const smooth = 4.0;
                   const gradientOfSmooth = 4.0;
-                  final left = borderRadius;
+                  const left = borderRadius;
                   final right = c.maxWidth - borderRadius;
-                  final concaveWidth = smooth +
+                  const concaveWidth = smooth +
                       gradientOfSmooth +
                       2 * radius +
                       gradientOfSmooth +
@@ -226,7 +225,7 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                                 child: SizedBox(
                                   width: 55,
                                   child: AnimatedOpacity(
-                                    duration: Duration(milliseconds: 200),
+                                    duration: const Duration(milliseconds: 200),
                                     opacity: _animIndex == index ? 1 : 0,
                                     child: Text(
                                       _titlePage[index],

@@ -207,7 +207,7 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
                     ? Container(
                   height: 106,
                   width: 106,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle
                       ),

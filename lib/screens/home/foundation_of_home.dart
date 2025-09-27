@@ -19,17 +19,17 @@ class _FoundationOfHomeState extends State<FoundationOfHome> {
   Widget _buildChild(GeneralSpecifications specs) {
     switch (_index) {
       case 0:
-        return HomeScreen();
+        return const HomeScreen();
       case 1:
-        return NotifyScreen();
+        return const NotifyScreen();
       case 2:
-        return JourneyScreen();
+        return const JourneyScreen();
       case 3:
-        return MessageScreen();
+        return const MessageScreen();
       case 4:
-        return ProfileScreen();
+        return const ProfileScreen();
       default:
-        return HomeScreen();
+        return const HomeScreen();
     }
   }
 
@@ -38,7 +38,7 @@ class _FoundationOfHomeState extends State<FoundationOfHome> {
     final specs = GeneralSpecifications(context);
     final child = _buildChild(specs);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(245, 245, 245, 1),
+      backgroundColor: const Color.fromRGBO(245, 245, 245, 1),
       extendBody: true,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),

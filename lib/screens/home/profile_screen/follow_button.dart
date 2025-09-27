@@ -4,6 +4,8 @@ import 'package:joy_way/widgets/ShowGeneralDialog.dart';
 import '../../../widgets/animated_container/animated_button.dart';
 
 class FollowButton extends StatefulWidget {
+  const FollowButton({super.key});
+
   @override
   State<FollowButton> createState() => _FollowButtonState();
 }
@@ -21,8 +23,8 @@ class _FollowButtonState extends State<FollowButton> {
       onTap: () {
         ShowGeneralDialog.General_Dialog(
             context: context,
-            beginOffset: Offset(1, 0),
-            child: Scaffold(
+            beginOffset: const Offset(1, 0),
+            child: const Scaffold(
               backgroundColor: Colors.white,
             )
         );

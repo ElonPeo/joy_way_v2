@@ -5,6 +5,8 @@ import '../../../config/general_specifications.dart';
 
 
 class BasicStatistics extends StatelessWidget{
+  const BasicStatistics({super.key});
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);

@@ -167,7 +167,7 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
                         left: 20,
                         child: AnimatedOpacity(
                           opacity: type == 2 ? 0 : 1,
-                          duration: Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 200),
                           child: Container(
                             height: 50,
                             width: specs.screenWidth - padding,
@@ -266,7 +266,7 @@ class _FoundationOfAuthState extends State<FoundationOfAuth> {
                       ),
                       AnimatedPositioned(
                         top: type == 2 ? 0 : 50,
-                        duration: Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 200),
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           switchInCurve: Curves.easeOutCubic,

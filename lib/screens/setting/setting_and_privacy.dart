@@ -54,14 +54,14 @@ class _SettingAndPrivacyState extends State<SettingAndPrivacy> {
                 title: "Verify identity",
                 assetIcon: "assets/icons/setting/id-badge.png",
                 onTap: () {
-                  print("Verify identity tapped");
+
                 },
               ),
               SettingTile(
                 title: "Change Password",
                 assetIcon: "assets/icons/setting/password-lock.png",
                 onTap: () {
-                  print("Verify identity tapped");
+
                 },
               ),
               SettingTile(
@@ -114,7 +114,7 @@ class _SettingAndPrivacyState extends State<SettingAndPrivacy> {
                 title: "Support",
                 assetIcon: "assets/icons/setting/user-headset.png",
                 onTap: () {
-                  print("");
+
                 },
               ),
               SettingTile(
@@ -165,7 +165,7 @@ class _SettingAndPrivacyState extends State<SettingAndPrivacy> {
             ],
           ),
         ),
-        Container(
+        SizedBox(
           height: specs.screenHeight - 200,
           width: specs.screenWidth,
         ),

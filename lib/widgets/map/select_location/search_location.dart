@@ -26,12 +26,26 @@ class SearchLocation extends StatefulWidget {
 }
 
 class _SearchLocationState extends State<SearchLocation> {
-  Timer? _deb;
+
+
+
+  Timer? _typingTimer;
+  String _lastQuery = '';
+  static const _debounce = Duration(milliseconds: 500);
+
 
   void _debouncedSearch(String q) {
-    _deb?.cancel();
-    _deb = Timer(const Duration(milliseconds: 350), () => searchPlace(q));
+    _typingTimer?.cancel();
+
+    final query = q.trim();
+    if (query.isEmpty) return;
+    if (query == _lastQuery) return;
+    _typingTimer = Timer(_debounce, () {
+      _lastQuery = query;
+      searchPlace(query);
+    });
   }
+
 
   List<Map<String, dynamic>> results = [];
   final TextEditingController _controller = TextEditingController();
@@ -73,10 +87,13 @@ class _SearchLocationState extends State<SearchLocation> {
 
   @override
   void dispose() {
-    _deb?.cancel();
     _controller.dispose();
+    _typingTimer?.cancel();
     super.dispose();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/avatar_and_background_image.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/choose_gender.dart';
 import 'package:joy_way/screens/setting/edit_profile/components/custom_title_input_profile.dart';
+import 'package:joy_way/screens/setting/edit_profile/components/social_links.dart';
 import 'package:joy_way/services/data_processing/time_processing.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_fire_storage_image.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_firestore.dart';
@@ -14,9 +16,10 @@ import 'package:joy_way/widgets/custom_input/custom_date_picker.dart';
 import 'package:joy_way/widgets/notifications/show_loading.dart';
 
 import '../../../config/general_specifications.dart';
+import '../../../widgets/ShowGeneralDialog.dart';
 import '../../../widgets/custom_scaffold/custom_scaffold.dart';
+import '../../../widgets/map/select_location/select_location.dart';
 import '../../../widgets/notifications/show_notification.dart';
-import 'components/select_location_button.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -29,6 +32,7 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final List<TextEditingController> _socialLinkControllers = [];
 
   bool _saving = false;
   bool dataFetched = true;
@@ -38,9 +42,12 @@ class _EditProfileState extends State<EditProfile> {
   String? _sex;
   String? _email;
   DateTime? _dateOfBirth;
-  String? _currentAddress;
   File? _avatarImage;
   File? _bgImage;
+  GeoPoint? _livingCoordinate;
+  String? _livingPlace;
+  List<String>? _socialLinks;
+
 
   @override
   void initState() {
@@ -49,27 +56,57 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<void> _loadUserInfo() async {
-    final result = await ProfileFirestore().getCurrentUserInformation();
+    final result = await ProfileFirestore().getCurrentUserInformation(context);
+    if (!mounted) return;
+
     if (result != null) {
+      final String? userName = result['userName'] as String?;
+      final String? name = result['name'] as String?;
+      final String? sex = result['sex'] as String?;
+      final String? email = result['email'] as String?;
+      final String? phoneNumber = result['phoneNumber'] as String?;
+      final dynamic dobRaw = result['dateOfBirth'];
+      final String? livingPlace = result['livingPlace'] as String?;
+      final GeoPoint? livingCoordinate = result['livingCoordinate'] as GeoPoint?;
+      final List<dynamic>? linksRaw = result['socialLinks'] as List<dynamic>?;
+
+      DateTime? dateOfBirth;
+      if (dobRaw is Timestamp) dateOfBirth = dobRaw.toDate();
+      if (dobRaw is DateTime) dateOfBirth = dobRaw;
+
+      final List<String>? socialLinks = linksRaw
+          ?.map((e) => (e ?? '').toString().trim())
+          .where((s) => s.isNotEmpty)
+          .take(3)
+          .toList();
+
       setState(() {
-        _userName = result['userName'];
-        _name = result['name'];
-        _sex = result['sex'];
-        _email = result['email'];
-        _phoneNumber = result['phoneNumber'];
-        _dateOfBirth = result['dateOfBirth'];
-        _currentAddress = result['currentAddress'];
+        _userName = userName;
+        _name = name;
+        _sex = sex;
+        _email = email;
+        _phoneNumber = phoneNumber;
+        _dateOfBirth = dateOfBirth;
+        _livingPlace = livingPlace;
+        _livingCoordinate = livingCoordinate;
+        _socialLinks = socialLinks;
+
         if (_name != null) _nameController.text = _name!;
         if (_userName != null) _userNameController.text = _userName!;
         if (_phoneNumber != null) _phoneNumberController.text = _phoneNumber!;
+
+        _socialLinkControllers
+          ..clear()
+          ..addAll((socialLinks ?? const <String>[])
+              .map((s) => TextEditingController(text: s)));
       });
     }
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        dataFetched = false;
-      });
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() => dataFetched = false);
     });
   }
+
 
   @override
   void dispose() {
@@ -120,13 +157,21 @@ class _EditProfileState extends State<EditProfile> {
           );
 
           // 3) Cập nhật profile
+          setState(() {
+            _socialLinks = _socialLinkControllers
+                .map((c) => c.text.trim())
+                .where((t) => t.isNotEmpty)
+                .toList();
+          });
           final result = await ProfileFirestore().editProfile(
             userName: _userNameController.text.trim(),
             name: _nameController.text.trim(),
             sex: _sex,
             phoneNumber: _phoneNumberController.text.trim(),
             dateOfBirth: _dateOfBirth,
-            currentAddress: _currentAddress,
+            livingPlace: _livingPlace,
+            livingCoordinate: _livingCoordinate,
+            socialLinks: _socialLinks,
           );
 
           // 4) Thông báo
@@ -428,36 +473,57 @@ class _EditProfileState extends State<EditProfile> {
                   height: 5,
                 ),
                 CustomTitleInputProfile(
-                  titleInput: "Current address",
+                  titleInput: "Living PLace",
                   child: dataFetched
                       ? LoadingContainer(width: inputWidth - 150, height: 30)
-                      : SelectLocationButton(
-                          width: inputWidth - 110,
-                          height: 30,
+                      : GestureDetector(
+                          onTap: () {
+                            ShowGeneralDialog.General_Dialog(
+                              context: context,
+                              beginOffset: const Offset(1, 0),
+                              child: SelectLocation(onGeoPoint: (v) {
+                                setState(() {
+                                  _livingCoordinate = v;
+                                });
+                              }, onAddress: (v) {
+                                _livingPlace = v;
+                              }),
+                            );
+                          },
                           child: SizedBox(
+                              width: inputWidth - 110,
                               child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                textAlign: TextAlign.left,
-                                _currentAddress ?? "Where you live",
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: (_currentAddress ?? '').isEmpty
-                                      ? specs.black200
-                                      : specs.pantoneColor4,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 15,
-                                width: 15,
-                                child: Image.asset(
-                                    "assets/icons/other_icons/angle-right.png"),
-                              )
-                            ],
-                          )),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width: inputWidth - 130,
+                                    child: Text(
+                                      _livingPlace ?? "Where you live",
+                                      textAlign: TextAlign.left,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: (_livingPlace ?? '').isEmpty
+                                            ? specs.black200
+                                            : specs.pantoneColor4,
+                                      ),
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        height: 15,
+                                        width: 15,
+                                        child: Image.asset(
+                                            "assets/icons/other_icons/angle-right.png"),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              )),
                         ),
                 ),
                 const SizedBox(
@@ -469,9 +535,28 @@ class _EditProfileState extends State<EditProfile> {
                   onSex: (value) => setState(() {
                     _sex = value;
                   }),
-                )
+                ),
               ],
             )),
+        const SizedBox(height: 25),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(width: 10),
+            Text(
+              "Social links",
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w500,
+                color: specs.black150,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SocialLinks(
+          controllers: _socialLinkControllers,
+        ),
         SizedBox(
           height: specs.screenHeight - 300,
           width: specs.screenWidth,
