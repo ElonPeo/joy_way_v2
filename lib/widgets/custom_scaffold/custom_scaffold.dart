@@ -3,9 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:joy_way/widgets/animated_container/animated_button.dart';
 import '../../config/general_specifications.dart';
-import 'package:joy_way/widgets/animated_container/animated_icon_button.dart';
+import '../animated_container/custom_animated_button.dart';
 
 class CustomScaffold extends StatefulWidget {
   final String title;
@@ -166,17 +165,13 @@ class _CustomScaffoldState extends State<CustomScaffold> {
             Positioned(
               top: 0,
               child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(15),
-                  bottomRight: Radius.circular(15),
-                ),
                 clipBehavior: Clip.hardEdge,
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     height: 90,
                     width: specs.screenWidth,
-                    color: const Color.fromRGBO(255, 255, 255, 0.7),
+                    color: const Color.fromRGBO(255, 255, 255, 0.85),
                     padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,16 +179,18 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                       children: [
                         SizedBox(
                           width: 50,
-                          child: AnimatedIconButton(
+                          child: CustomAnimatedButton(
                             onTap: () => Navigator.pop(context),
                             height: 30,
                             width: 20,
                             color: Colors.transparent,
                             shadowColor: Colors.transparent,
-                            child: SizedBox(
-                              height: 23, width: 23,
-                              child: Image.asset("assets/icons/other_icons/angle-left.png"),
-                            ),
+                            child: const Center(
+                              child: ImageIcon(
+                                AssetImage("assets/icons/other_icons/angle-left.png"),
+                                size: 22,
+                              ),
+                            )
                           ),
                         ),
                         AnimatedOpacity(
@@ -207,7 +204,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                                 widget.title,
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
-                                  fontSize: 18,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -215,20 +212,24 @@ class _CustomScaffoldState extends State<CustomScaffold> {
                           ),
                         ),
                         widget.onConfirm != null ?
-                        AnimatedButton(
-                            height: 30,
-                            width: 40,
-                            text: "Save",
-                          fontSize: 18,
+                        CustomAnimatedButton(
+                          height: 30,
+                          width: 40,
                           color: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          textColor: Colors.black,
-                          fontWeight: FontWeight.w500,
                           onTap: () async {
                             if (widget.onConfirm != null) {
                               await widget.onConfirm!.call();
                             }
                           },
+                          child: Text(
+                              "Save",
+                            style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
                         ) : const SizedBox(
                           width: 40,
                         ),

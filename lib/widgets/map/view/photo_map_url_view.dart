@@ -23,7 +23,7 @@ class PhotoMapUrlView extends StatefulWidget {
     required this.height,
     required this.mapboxToken,
     this.style = 'mapbox/streets-v12',
-    this.zoom = 13.0,
+    this.zoom = 12.0,
     this.borderRadius = 12.0,
   });
 

@@ -7,14 +7,14 @@ class CustomPhotoView extends StatefulWidget {
   final double width;
   final Color backgroundColor;
   final BorderRadius borderRadius;
-  final Widget child;
+  final Widget? child;
 
   const CustomPhotoView({
     super.key,
     required this.height,
     required this.width,
     required this.imageProvider,
-    required this.child,
+    this.child,
     this.borderRadius = const BorderRadius.all(Radius.circular(40)),
     this.backgroundColor = Colors.transparent,
   });

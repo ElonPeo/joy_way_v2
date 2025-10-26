@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:joy_way/screens/authentication/foundation_of_auth.dart';
-import 'package:joy_way/screens/home/foundation_of_home.dart';
+import 'package:joy_way/screens/foundation_of_home.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});

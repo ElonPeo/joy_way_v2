@@ -353,9 +353,9 @@ class _StatusAndMessageState extends State<StatusAndMessage>
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
                                           colors: [
-                                            Color.fromRGBO(183, 231, 253, 1),
+                                            Color.fromRGBO(210, 238, 251, 1),
                                             Color.fromRGBO(247, 252, 255, 1),
-                                            Color.fromRGBO(206, 190, 232, 1),
+                                            Color.fromRGBO(230, 222, 244, 1),
                                           ],
                                           begin: Alignment.topRight,
                                           end: Alignment.bottomCenter,

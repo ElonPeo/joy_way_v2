@@ -1,158 +1,313 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../config/general_specifications.dart';
-import '../animated_container/animated_button.dart';
-import '../animated_container/animated_icon_button.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/services/data_processing/time_processing.dart';
 
-class CustomDatePicker extends StatelessWidget {
-  final Widget child;
-  final bool dismissible;
-  final Duration duration;
-  final DateTime? dateTime;
+import '../../config/general_specifications.dart';
+import '../animated_container/custom_animated_button.dart';
+import 'custom_text_box.dart';
+import 'confirm_button.dart';
+
+class CustomDatePicker extends StatefulWidget {
+  final DateTime? date;
+  final TimeOfDay? time;
+  final bool? isDate;
   final String title;
-  final bool isDate;
-  final Function(DateTime)? onDateTimeChanged;
+  final ValueChanged<DateTime>? onDateSelected;
+  final ValueChanged<TimeOfDay>? onTimeSelected;
+  final ValueChanged<DateTime>? onDateTimeChanged;
+
+  final Widget child;
 
   const CustomDatePicker({
     super.key,
     required this.child,
-    required this.onDateTimeChanged,
-    this.dismissible = true,
-    this.duration = const Duration(milliseconds: 250),
-    this.isDate = true,
     this.title = "Date Picker",
-    this.dateTime,
+    this.date,
+    this.time,
+    this.isDate,
+    this.onDateSelected,
+    this.onTimeSelected,
+    this.onDateTimeChanged,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => _open(context),
-      child: child,
-    );
+  State<CustomDatePicker> createState() => _CustomDatePickerState();
+}
+
+class _CustomDatePickerState extends State<CustomDatePicker> {
+  bool _isTapSelectDate = false;
+  bool _isTapSelectTime = false;
+
+  static const _switcherDuration = Duration(milliseconds: 350);
+  static const _curveIn = Curves.easeOutCubic;
+  static const _curveOut = Curves.easeInCubic;
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+
+
+  DateTime _combine(DateTime d, TimeOfDay t) =>
+      DateTime(d.year, d.month, d.day, t.hour, t.minute);
+
+  DateTime _initialTimeDateTime() {
+    final base = _selectedDate ?? widget.date ?? DateTime.now();
+    final t = _selectedTime ?? widget.time ?? TimeOfDay.fromDateTime(DateTime.now());
+    return _combine(base, t);
   }
 
-  void _open(BuildContext context) {
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      if(widget.date != null) {
+        _selectedDate = DateUtils.dateOnly(widget.date!);
+        _selectedTime = TimeOfDay.fromDateTime(widget.date!);
+      }
+    });
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-    DateTime temp = dateTime ?? DateTime.now();
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: dismissible,
-      barrierLabel: 'select',
-      barrierColor: Colors.transparent,
-      transitionDuration: duration,
-      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
-      transitionBuilder: (context, animation, secondary, _) {
+    final showDate = (widget.isDate == null) || (widget.isDate == true);
+    final showTime = (widget.isDate == null) || (widget.isDate == false);
 
-        final t = Curves.easeOutCubic.transform(animation.value);
-        final sigma = 5.0 * t;
-        final barrierOpacity = 0.25 * t;
-        return Stack(
-          children: [
-            // Blur nền + chặn tap
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: dismissible ? () => Navigator.of(context, rootNavigator: true).pop() : null,
-                  child: Container(color: Colors.black.withOpacity(barrierOpacity)),
-                ),
-              ),
-            ),
-
-            // Bottom sheet
-            Positioned(
-              left: 0, right: 0, bottom: 0,
-              child: Transform.translate(
-                offset: Offset(0, (1 - t) * 330),
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: specs.screenWidth,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(topRight: Radius.circular(40),topLeft: Radius.circular(40)),
-                      boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black12)],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2C7A54),
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 50,
-                                child: AnimatedIconButton(
-                                  onTap: () => Navigator.of(context).maybePop(),
-                                  height: 30,
-                                  width: 20,
-                                  color: Colors.transparent,
-                                  shadowColor: Colors.transparent,
-                                  child: const ImageIcon(
-                                    AssetImage("assets/icons/other_icons/angle-left.png"),
-                                    color: Colors.white,
-                                    size: 23,
-                                  )
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              AnimatedButton(
-                                height: 30,
-                                width: 50,
-                                text: "Save",
-                                fontSize: 20,
-                                color: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                textColor: Colors.white,
-                                fontWeight: FontWeight.w400,
-                                onTap: () async {
-                                  if (onDateTimeChanged != null) onDateTimeChanged!(temp);
-                                  Navigator.of(context).maybePop();
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-
-                        // Picker
-                        SizedBox(
-                          height: 200,
-                          child: CupertinoDatePicker(
-                            mode: isDate
-                                ? CupertinoDatePickerMode.date
-                                : CupertinoDatePickerMode.time,
-                            initialDateTime: dateTime ?? DateTime.now(),
-                            use24hFormat: true,
-                            onDateTimeChanged: (d) => temp = d,
-                          ),
-                        ),
-
-
-
-                      ],
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 50),
+            decoration: BoxDecoration(color: specs.black240),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 50,
+                  child: CustomAnimatedButton(
+                    onTap: () async {
+                      FocusScope.of(context).unfocus();
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (mounted) Navigator.pop(context);
+                    },
+                    height: 30,
+                    width: 20,
+                    color: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    child: SizedBox(
+                      height: 23,
+                      width: 23,
+                      child: Image.asset("assets/icons/other_icons/angle-left.png"),
                     ),
                   ),
                 ),
+                SizedBox(
+                  height: 30,
+                  width: specs.screenWidth - 130,
+                  child: Center(
+                    child: Text(
+                      widget.title,
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 40),
+              ],
+            ),
+          ),
+
+          // Content
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() {
+                  _isTapSelectDate = false;
+                  _isTapSelectTime = false;
+                });
+              },
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  const SizedBox(height: 20),
+
+                  widget.child,
+
+
+                  if (showDate)
+                    Row(
+                      children: [
+                        const SizedBox(width: 20),
+                        CustomTextBox(
+                          width: specs.screenWidth - 40,
+                          text: TimeProcessing.dateToString(_selectedDate),        // hoặc "Date", dùng hiddenText hiển thị
+                          hiddenText: "Set date",
+                          onTap: () async {
+                            setState(() {
+                              _isTapSelectDate = true;
+                              _isTapSelectTime = false;
+                              _selectedDate = DateUtils.dateOnly(
+                                (widget.date ?? DateTime.now()),
+                              );
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  if (showTime)
+                    Row(
+                      children: [
+                        const SizedBox(width: 20),
+                        CustomTextBox(
+                          width: 160,
+                          text: TimeProcessing.timeToString(_selectedTime, context),
+                          hiddenText: "Time",
+                          onTap: () async {
+                            setState(() {
+                              _isTapSelectDate = false;
+                              _isTapSelectTime = true;
+                              _selectedTime = widget.time ?? TimeOfDay.fromDateTime(DateTime.now());
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 400),
+                ],
               ),
             ),
-          ],
-        );
-      },
+          ),
+
+          // Confirm
+          ConfirmButton(
+            onConfirm: () async {
+              // 1) Date-only mode
+              if (widget.isDate == true) {
+                if (_selectedDate == null) {
+                  _toast(context, "Please select a date");
+                  return;
+                }
+                widget.onDateSelected?.call(_selectedDate!);
+                Navigator.pop(context);
+                return;
+              }
+              // 2) Time-only mode
+              if (widget.isDate == false) {
+                if (_selectedTime == null) {
+                  _toast(context, "Please select a time");
+                  return;
+                }
+                widget.onTimeSelected?.call(_selectedTime!);
+                Navigator.pop(context);
+                return;
+              }
+              // 3) Both (bắt buộc đủ)
+              if (_selectedDate == null || _selectedTime == null) {
+                _toast(context, "Please set both Date and Time");
+                return;
+              }
+
+              final dt = DateTime(
+                _selectedDate!.year,
+                _selectedDate!.month,
+                _selectedDate!.day,
+                _selectedTime!.hour,
+                _selectedTime!.minute,
+              );
+              widget.onDateTimeChanged?.call(dt);
+              Navigator.pop(context);
+            },
+          ),
+
+          // Date picker
+          AnimatedSwitcher(
+            duration: _switcherDuration,
+            switchInCurve: _curveIn,
+            switchOutCurve: _curveOut,
+            transitionBuilder: (child, anim) => SizeTransition(
+              sizeFactor: anim,
+              axis: Axis.vertical,
+              child: FadeTransition(opacity: anim, child: child),
+            ),
+            child: _isTapSelectDate && showDate
+                ? SizedBox(
+              key: const ValueKey('date-on'),
+              height: 220,
+              width: specs.screenWidth,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: _selectedDate ?? widget.date ?? DateTime.now(),
+                      use24hFormat: true,
+                      onDateTimeChanged: (d) {
+                        setState(() => _selectedDate = DateUtils.dateOnly(d));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            )
+                : const SizedBox.shrink(key: ValueKey('date-off')),
+          ),
+
+          // Time picker
+          AnimatedSwitcher(
+            duration: _switcherDuration,
+            switchInCurve: _curveIn,
+            switchOutCurve: _curveOut,
+            transitionBuilder: (child, anim) => SizeTransition(
+              sizeFactor: anim,
+              axis: Axis.vertical,
+              child: FadeTransition(opacity: anim, child: child),
+            ),
+            child: _isTapSelectTime && showTime
+                ? SizedBox(
+              key: const ValueKey('time-on'),
+              height: 220,
+              width: specs.screenWidth,
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 200,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.time,
+                      initialDateTime: _initialTimeDateTime(),
+                      use24hFormat: true,
+                      onDateTimeChanged: (d) {
+                        setState(() => _selectedTime = TimeOfDay.fromDateTime(d));
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            )
+                : const SizedBox.shrink(key: ValueKey('time-off')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toast(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
     );
   }
 }

@@ -185,7 +185,7 @@ class SettingTile extends StatefulWidget {
     super.key,
     required this.title,
     required this.assetIcon,
-    this.iconColor = const Color.fromRGBO(150, 150, 150, 1),
+    this.iconColor = Colors.black,
     this.onTap,
     this.hasBottomBorder = true,
   });
@@ -243,7 +243,7 @@ class _SettingTileState extends State<SettingTile> {
             Text(
               widget.title,
               style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
                 color: Colors.black,
                 fontSize: 14,
                 decoration: TextDecoration.none,

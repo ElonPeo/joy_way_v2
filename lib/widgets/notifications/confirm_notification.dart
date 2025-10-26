@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:joy_way/widgets/animated_container/animated_button.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/custom_animated_button.dart';
 
 class ConfirmNotification {
   static bool _isNotificationVisible = false;
@@ -251,28 +252,37 @@ class ___AnimatedConfirmSnackBarState extends State<_AnimatedConfirmSnackBar>
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    AnimatedButton(
+                                    CustomAnimatedButton(
                                       height: 45,
                                       width: w * 0.4,
                                       color: const Color.fromRGBO(100, 100, 100, 1),
-                                      textColor: Colors.white,
                                       shadowColor: Colors.black12,
-                                      text: 'Cancel',
-                                      fontSize: 14,
                                       onTap: () => _requestClose(false),
+                                      child: Text(
+                                          'Cancel',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
-                                    AnimatedButton(
+                                    CustomAnimatedButton(
                                       height: 45,
                                       width: w * 0.4,
                                       color: _bgColors[widget.type],
-                                      text: 'Confirm',
-                                      fontSize: 14,
                                       onTap: () async {
                                         if (widget.onConfirm != null) {
                                           await widget.onConfirm!.call();
                                         }
                                         _requestClose(true);
                                       },
+                                      child: Text(
+                                        'Confirm',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

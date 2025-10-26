@@ -44,7 +44,7 @@ class _AnimatedSnackBar extends StatefulWidget {
     required this.errorMessage,
     required this.overlayEntry,
     required this.type,
-    this.duration =  const Duration(milliseconds: 500),
+    this.duration =  const Duration(milliseconds: 200),
   });
 
   @override

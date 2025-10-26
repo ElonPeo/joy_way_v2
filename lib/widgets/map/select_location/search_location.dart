@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/custom_animated_button.dart';
 
 import '../../../config/general_specifications.dart';
 import '../../../services/mapbox_services/mapbox_config.dart';
-import '../../animated_container/animated_icon_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import '../../notifications/show_notification.dart';
+
 
 class SearchLocation extends StatefulWidget {
 
@@ -107,10 +107,6 @@ class _SearchLocationState extends State<SearchLocation> {
             padding:
                 const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 50),
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(40),
-                bottomLeft: Radius.circular(40),
-              ),
               color: specs.black240,
             ),
             child: Column(
@@ -121,7 +117,7 @@ class _SearchLocationState extends State<SearchLocation> {
                   children: [
                     SizedBox(
                       width: 50,
-                      child: AnimatedIconButton(
+                      child: CustomAnimatedButton(
                           onTap: () async {
                             FocusScope.of(context).unfocus();
                             await Future.delayed(const Duration(milliseconds: 300));
@@ -147,7 +143,7 @@ class _SearchLocationState extends State<SearchLocation> {
                         "Search Location",
                         style: GoogleFonts.outfit(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
                             fontWeight: FontWeight.w600),
                       )),
                     ),
@@ -171,8 +167,18 @@ class _SearchLocationState extends State<SearchLocation> {
                           child: Container(
                             height: 38,
                             width: 38,
-                            decoration: const BoxDecoration(
-                                color: Colors.black, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  spreadRadius: 2,
+                                  offset: Offset(0, 0),
+                                  blurRadius: 2,
+                                )
+                              ],
+                            ),
                             child: const Center(
                               child: ImageIcon(
                                   AssetImage(
@@ -187,7 +193,7 @@ class _SearchLocationState extends State<SearchLocation> {
                       Container(
                         height: 45,
                         width: specs.screenWidth - 110,
-                        padding: const EdgeInsets.only(bottom: 12.5),
+                        padding: const EdgeInsets.only(bottom: 11.5),
                         child: TextField(
                           controller: _controller,
                           autofocus: true,

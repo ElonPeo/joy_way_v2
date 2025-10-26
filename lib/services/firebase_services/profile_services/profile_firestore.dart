@@ -1,8 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:joy_way/models/user/user_information.dart';
 import 'package:joy_way/services/data_processing/data_processing.dart';
 import 'package:joy_way/widgets/notifications/show_notification.dart';
+
+import '../../../models/user/basic_user_info.dart';
+import '../../../models/user/user_app.dart';
+
+
+
 
 class ProfileFirestore {
   final _auth = FirebaseAuth.instance;
@@ -21,16 +28,45 @@ class ProfileFirestore {
     return 1;
   }
 
-
-  List<String> generateSearchKeywords(String value) {
-    final v = value.trim().toLowerCase();
-    if (v.isEmpty) return [''];
-    final keywords = <String>[];
-    for (int i = 1; i <= v.length; i++) {
-      keywords.add(v.substring(0, i));
+  /// tách user name ra để tìm kiếm
+  String _canonicalUserName(String v) {
+      final s = v.trim().toLowerCase();
+      return s.startsWith('@') ? s.substring(1) : s;
     }
-    return keywords;
+  List<String> generateSearchKeywords(String value) {
+    final v = _removeDiacritics(_canonicalUserName(value));
+    if (v.isEmpty) return [''];
+    final list = <String>[];
+    for (int i = 1; i <= v.length; i++) {
+      list.add(v.substring(0, i));
+    }
+    return list;
   }
+
+  String _removeDiacritics(String s) {
+    const map = {
+      'a': r'[àáạảãâầấậẩẫăằắặẳẵ]',
+      'A': r'[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ]',
+      'e': r'[èéẹẻẽêềếệểễ]',
+      'E': r'[ÈÉẸẺẼÊỀẾỆỂỄ]',
+      'i': r'[ìíịỉĩ]',
+      'I': r'[ÌÍỊỈĨ]',
+      'o': r'[òóọỏõôồốộổỗơờớợởỡ]',
+      'O': r'[ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ]',
+      'u': r'[ùúụủũưừứựửữ]',
+      'U': r'[ÙÚỤỦŨƯỪỨỰỬỮ]',
+      'y': r'[ỳýỵỷỹ]',
+      'Y': r'[ỲÝỴỶỸ]',
+      'd': r'[đ]',
+      'D': r'[Đ]',
+    };
+
+    map.forEach((plain, pattern) {
+      s = s.replaceAll(RegExp(pattern), plain);
+    });
+    return s;
+  }
+
 
   /// kieemr tra sự tồn tại của user
   Future<bool> checkUserExists(String uid) async {
@@ -46,94 +82,54 @@ class ProfileFirestore {
   }
 
 
-  Future<Map<String, dynamic>?> getCurrentUserInformation(BuildContext context) async {
+
+  /// Lấy thông tin người khác theo userId truyền vào
+  /// Lấy thông tin người dùng theo uid truyền vào.
+  /// Nếu uid == null => dùng uid hiện tại (nếu đã đăng nhập).
+  Future<UserApp?> getUserInformationById(BuildContext context, {String? uid}) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      final String? targetUid = uid ?? _uid;
+      if (targetUid == null || targetUid.trim().isEmpty) {
+        ShowNotification.showAnimatedSnackBar(
+          context,
+          'You are not logged in',
+          2,
+          const Duration(milliseconds: 500),
+        );
+        return null;
+      }
+      final snap = await _db.collection('users').doc(targetUid).get();
       if (!snap.exists) return null;
-      final data = snap.data();
-      if (data == null) return null;
-      DateTime? dob;
-      final dobRaw = data['dateOfBirth'];
-      if (dobRaw is Timestamp) dob = dobRaw.toDate();
-      if (dobRaw is DateTime) dob = dobRaw;
-      GeoPoint? living;
-      final lc = data['livingCoordinate'];
-      if (lc is GeoPoint) {
-        living = lc;
-      } else if (lc is Map) {
-        final lat = (lc['latitude'] ?? lc['lat']);
-        final lng = (lc['longitude'] ?? lc['lng']);
-        if (lat is num && lng is num) {
-          living = GeoPoint(lat.toDouble(), lng.toDouble());
-        }
-      }
-      List<String>? links;
-      final linksRaw = data['socialLinks'];
-      if (linksRaw is List) {
-        links = linksRaw
-            .map((e) => (e ?? '').toString().trim())
-            .where((s) => s.isNotEmpty)
-            .take(3)
-            .toList();
-        if (links.isEmpty) links = null;
-      }
-      return {
-        'userName': data['userName'] as String?,
-        'name': data['name'] as String?,
-        'sex': data['sex'] as String?,
-        'phoneNumber': data['phoneNumber'] as String?,
-        'dateOfBirth': dob,
-        'livingPlace': data['livingPlace'] as String?,
-        'livingCoordinate': living,
-        'email': data['email'] as String?,
-        'socialLinks': links,
-      };
+      return UserApp.fromDoc(snap);
     } catch (e) {
-      ShowNotification.showAnimatedSnackBar(context,  'Error: ${e.toString()}' , 2, const Duration(milliseconds: 500));
+      ShowNotification.showAnimatedSnackBar(
+        context,
+        'Error: ${e.toString()}',
+        2,
+        const Duration(milliseconds: 500),
+      );
       return null;
     }
   }
 
 
-  /// lấy thông tin user khác dựa vào uid
-  Future<Map<String, dynamic>?> getOtherUserInformationByUid(String uid) async {
-    try {
-      final doc = await _db.collection('users').doc(uid).get();
-      if (!doc.exists) return null;
-      final data = doc.data() as Map<String, dynamic>;
-      return {
-        'userName': data['userName'],
-        'name': data['name'],
-        'sex': data['sex'],
-        'phoneNumber': data['phoneNumber'],
-        'dateOfBirth': data['dateOfBirth'] != null
-            ? (data['dateOfBirth'] as Timestamp).toDate()
-            : null,
-        'livingPlace': data['livingPlace'],
-        'livingCoordinate': data['livingCoordinate'],
-        'socialLinks': data['socialLinks']
-      };
-    } catch (e) {
-      return null;
-    }
-  }
+
+
+
+
   /// Kiểm tra sự tồn tại của userName
   Future<bool> checkUserNameExists(String userName) async {
     try {
       final currentUid = _uid;
       if (currentUid == null) return false;
+      final canonical = _canonicalUserName(userName);
       final q = await _db
           .collection('users')
-          .where('userName', isEqualTo: '@${userName.trim()}')
+          .where('userName', isEqualTo: canonical) // không có '@'
           .limit(2)
           .get();
       return q.docs.any((d) => d.id != currentUid);
-    } catch (e) {
+    } catch (_) {
       return true;
     }
   }
@@ -172,126 +168,90 @@ class ProfileFirestore {
 
 
   /// tạo thông tin user
-  Future<String?> createUserInformation({
-    required String email,
-    required String userId,
-    GeoPoint? livingCoordinate,
-    String? livingPlace,
-    String? userName,
-    String? name,
-    String? sex,
-    String? phoneNumber,
-    DateTime? dateOfBirth,
-    List<String>? socialLinks,
-  }) async {
+  Future<String?> createUser(UserApp user) async {
     try {
-      final docRef = _db.collection('users').doc(userId);
-      final cleanedLinks = DataProcessing.sanitizeLinks(socialLinks);
-      final data = <String, dynamic>{
-        'email': email,
-        'userId': userId,
-        'userName': userName,
-        'searchKeywords':
-        userName != null ? generateSearchKeywords(userName) : null,
-        'name': name,
-        'sex': sex,
-        'phoneNumber': phoneNumber,
-        'dateOfBirth':
-        dateOfBirth != null ? Timestamp.fromDate(dateOfBirth) : null,
-        'livingCoordinate': livingCoordinate,
-        'livingPlace': livingPlace,
-        'socialLinks': cleanedLinks,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }..removeWhere((k, v) => v == null);
-
-      await docRef.set(data);
+      await _db.collection('users').doc(user.userId).set(user.toMap());
       return null;
     } catch (e) {
-      return "Error from create information: $e";
+      return "Error creating user: $e";
     }
   }
 
   /// cập nhật thông tin user
-  Future<String?> updateUserInformation({
-    String? name,
-    String? sex,
-    String? phoneNumber,
-    DateTime? dateOfBirth,
-    String? livingPlace,
-    GeoPoint? livingCoordinate,
-    List<String>? socialLinks,
-  }) async {
+  Future<String?> updateUser(UserApp user) async {
     try {
-      final uid = _uid;
-      final cleanedLinks = DataProcessing.sanitizeLinks(socialLinks);
-      if (uid == null) return "NOT_LOGGED_IN";
-      final data = <String, dynamic>{
-        if (name != null) 'name': name,
-        if (sex != null) 'sex': sex,
-        if (phoneNumber != null) 'phoneNumber': phoneNumber,
-        if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth),
-        if (livingPlace != null) 'livingPlace': livingPlace,
-        if (livingCoordinate != null) 'livingCoordinate': livingCoordinate,
-        if (socialLinks != null) 'socialLinks': cleanedLinks,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      await _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
+      await _db.collection('users').doc(user.userId).set(user.toMap(), SetOptions(merge: true));
       return null;
     } catch (e) {
-      return "Update failed: $e";
+      return "Error updating user: $e";
     }
   }
+
   /// chỉnh sửa thông tin user nếu tồn tại thì cập nhật nếu chưa thì tạo mới
-  Future<String?> editProfile({
-    required String? userName,
-    required String? name,
-    required String? sex,
-    required String? phoneNumber,
-    required DateTime? dateOfBirth,
-    required String? livingPlace,
-    required GeoPoint? livingCoordinate,
-    required List<String>? socialLinks,
-  }) async {
+  Future<String?> editProfile(UserInformation user) async {
     try {
-      // 1) kiểm tra đăng nhập
-      final uid = _uid;
-      final email = _email;
-      if (uid == null) return "NOT_LOGGED_IN";
-      // 2) kiểm tra tồn tại
-      final exists = await checkUserExists(uid);
+      final current = _auth.currentUser;
+      if (current == null) return "NOT_LOGGED_IN";
+
+      final uid = current.uid;
+      final email = current.email ?? "error email";
+      final canonicalUserName = user.userName != null ? _canonicalUserName(user.userName!) : null;
+
+      final userApp = UserApp(
+        email: email,
+        userId: uid,
+        userName: canonicalUserName, // lưu không có '@'
+        name: user.name,
+        sex: user.sex,
+        phoneNumber: user.phoneNumber,
+        dateOfBirth: user.dateOfBirth,
+        livingPlace: user.livingPlace,
+        livingCoordinate: user.livingCoordinate,
+        socialLinks: user.socialLinks,
+        avatarImageId: user.avatarImageId,
+        backgroundImageId: user.backgroundImageId,
+      );
+
+      final docRef = _db.collection('users').doc(uid);
+      final exists = (await docRef.get()).exists;
+
+      final data = {
+        ...userApp.toMap(),
+        if (canonicalUserName != null) 'searchKeywords': generateSearchKeywords(canonicalUserName),
+      };
+
       if (exists) {
-        return await updateUserInformation(
-          name: name,
-          sex: sex,
-          phoneNumber: phoneNumber,
-          dateOfBirth: dateOfBirth,
-          livingPlace: livingPlace,
-          livingCoordinate: livingCoordinate,
-          socialLinks: socialLinks,
-        );
+        await docRef.set(data, SetOptions(merge: true));
       } else {
-        return await createUserInformation(
-          email: email ?? "error email",
-          userId: uid,
-          userName: userName,
-          name: name,
-          sex: sex,
-          phoneNumber: phoneNumber,
-          dateOfBirth: dateOfBirth,
-          livingPlace: livingPlace,
-          livingCoordinate: livingCoordinate,
-          socialLinks: socialLinks,
-        );
+        await docRef.set({
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
       }
+      return null;
     } catch (e) {
-      return e.toString();
+      return "Error editing profile: $e";
     }
   }
 
 
+  Future<({BasicUserInfo? user, String? error})> getBasicUserInfo(String uid) async {
+    try {
+      final doc = await _db.collection('users').doc(uid).get();
+      if (!doc.exists) return (user: null, error: 'User not found');
+      final data = doc.data()!;
+      final user = BasicUserInfo.fromMap(data, uid);
+      return (user: user, error: null);
+    } catch (e) {
+      return (user: null, error: 'Failed to get user info: $e');
+    }
+  }
 
+  Future<({BasicUserInfo? user, String? error})> getMyBasicUserInfo() async {
+    final uid = _uid;
+    if (uid == null) return (user: null, error: 'Not logged in');
+    return getBasicUserInfo(uid);
+  }
 
 
 }

@@ -11,14 +11,12 @@ import 'package:joy_way/services/mapbox_services/mapbox_config.dart';
 
 import 'package:joy_way/widgets/ShowGeneralDialog.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/custom_animated_button.dart';
 import 'package:joy_way/widgets/map/select_location/search_location.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 
 import 'package:joy_way/services/mapbox_services/general_map_services.dart';
-import 'package:joy_way/widgets/animated_container/animated_button.dart';
-
-import '../../animated_container/animated_icon_button.dart';
 import '../../animated_icons/loading_rive_icon.dart';
 
 class SelectLocation extends StatefulWidget {
@@ -207,7 +205,7 @@ class _SelectLocationState extends State<SelectLocation> {
                   children: [
                     SizedBox(
                       width: 50,
-                      child: AnimatedIconButton(
+                      child: CustomAnimatedButton(
                         onTap: () => Navigator.pop(context),
                         height: 30,
                         width: 20,
@@ -229,58 +227,62 @@ class _SelectLocationState extends State<SelectLocation> {
                         "Select Location",
                         style: GoogleFonts.outfit(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
                             fontWeight: FontWeight.w600),
                       )),
                     ),
-                    AnimatedButton(
+                    CustomAnimatedButton(
                       height: 30,
                       width: 40,
-                      text: "Save",
-                      fontSize: 18,
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      textColor: Colors.black,
-                      fontWeight: FontWeight.w500,
                       onTap: () async {
                         widget.onAddress(_pickedName);
                         widget.onGeoPoint(_picked);
                         Navigator.pop(context);
                       },
+                      child: Text(
+                        "Save",
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 18,
+                        ),
+                      ),
                     )
                   ],
                 ),
                 const SizedBox(height: 15),
                 GestureDetector(
                   onTap: () => {
-                    ShowGeneralDialog.General_Dialog(
-                      context: context,
-                      beginOffset: const Offset(1, 0),
-                      child: SearchLocation(
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SearchLocation(
                           /// Tìm địa đểm và hiển thị pin và tên địa điểm
-                          onLonLatGeoPoint: (value) async {
-                        // 1) lấy dữ liệu
-                        if (value == null) return;
-                        final lat = value.latitude;
-                        final lon = value.longitude;
-                        final p = Point(coordinates: Position(lon, lat));
-                        final gp = MapProcessing().fromPointToGeoPoint(p);
-                        // 2) Bay tời địa điểm đã tìm
-                        await _map.flyTo(
-                          CameraOptions(
-                              center: p, zoom: 15, bearing: 0, pitch: 0),
-                          MapAnimationOptions(duration: 500),
-                        );
-                        // 3) Hiển thị pin và lấy tên địa điểm
-                        final nameGeocode =
-                            await _showOrMovePinAndReverseGeocode(gp);
-                        setState(() {
-                          _picked = gp;
-                          _pickedName = nameGeocode;
-                        });
-                      }),
-                    ),
+                            onLonLatGeoPoint: (value) async {
+                              // 1) lấy dữ liệu
+                              if (value == null) return;
+                              final lat = value.latitude;
+                              final lon = value.longitude;
+                              final p = Point(coordinates: Position(lon, lat));
+                              final gp = MapProcessing().fromPointToGeoPoint(p);
+                              // 2) Bay tời địa điểm đã tìm
+                              await _map.flyTo(
+                                CameraOptions(
+                                    center: p, zoom: 15, bearing: 0, pitch: 0),
+                                MapAnimationOptions(duration: 500),
+                              );
+                              // 3) Hiển thị pin và lấy tên địa điểm
+                              final nameGeocode =
+                              await _showOrMovePinAndReverseGeocode(gp);
+                              setState(() {
+                                _picked = gp;
+                                _pickedName = nameGeocode;
+                              });
+                            })
+                      ),
+                    )
                   },
                   child: Container(
                     height: 45,
@@ -366,14 +368,18 @@ class _SelectLocationState extends State<SelectLocation> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              AnimatedButton(
+              CustomAnimatedButton(
                 color: Colors.black,
                 shadowColor: const Color.fromRGBO(0, 0, 0, 0.12),
                 height: 40,
                 width: 100,
-                text: 'Retry',
-                fontSize: 14,
                 onTap: _bootstrap,
+                child: Text(
+                  'Retry',
+                  style: GoogleFonts.outfit(
+                    fontSize: 14
+                  ),
+                ),
               ),
             ],
           ),

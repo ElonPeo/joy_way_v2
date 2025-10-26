@@ -43,7 +43,10 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
     _loadCurrentUserImages();
     super.initState();
   }
-
+  @override
+  void dispose() {
+    super.dispose();
+  }
   Future<void> _loadCurrentUserImages() async {
     final imgs =
         await ProfileFireStorageImage().getCurrentUserAvatarAndBackgroundUrls();
@@ -181,7 +184,7 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
               onTap: _pickBackground,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(0, 0, 0, 0.75),
                   borderRadius: BorderRadius.circular(20),
@@ -190,7 +193,7 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
                   "Edit",
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -232,8 +235,8 @@ class _AvatarAndBackgroundImageState extends State<AvatarAndBackgroundImage> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                 Positioned(
-                  bottom: 0,
-                  right: 0,
+                  bottom: 3,
+                  right: 3,
                   child: GestureDetector(
                     onTap: _pickAvatar,
                     child: Container(

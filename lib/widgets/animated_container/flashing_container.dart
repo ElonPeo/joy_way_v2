@@ -4,6 +4,7 @@ class FlashingContainer extends StatefulWidget {
   final double height;
   final double width;
   final BorderRadius borderRadius;
+  final EdgeInsets margin;
   final Color color;
   final Color flashingColor;
   final double pressedScale;
@@ -17,7 +18,8 @@ class FlashingContainer extends StatefulWidget {
     required this.width,
     required this.flashingColor,
     required this.child,
-    this.borderRadius = const BorderRadius.all(Radius.circular(50)),
+    this.margin = const EdgeInsets.all(0),
+    this.borderRadius = const BorderRadius.all(Radius.circular(0)),
     this.color = const Color.fromRGBO(40, 67, 43, 1),
     this.duration = const Duration(milliseconds: 150),
     this.onTap,
@@ -68,11 +70,13 @@ class _FlashingContainerState extends State<FlashingContainer> {
                     widget.onTap?.call();
                   }
                 },
+                margin: widget.margin,
                 duration: widget.duration,
                 height: widget.height,
                 width: widget.width,
                 decoration: BoxDecoration(
                   color: _isTapDown ? widget.flashingColor : widget.color,
+                  borderRadius: widget.borderRadius,
                 ),
                 child: widget.child,
               ),

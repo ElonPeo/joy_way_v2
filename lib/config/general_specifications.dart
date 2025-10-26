@@ -16,10 +16,11 @@ class GeneralSpecifications {
 
   final Color backgroundColor;
 
-  final Color time;
   final Color black80;
   final Color black100;
+  final Color black250;
   final Color black240;
+  final Color black245;
   final Color black150;
   final Color black200;
 
@@ -28,11 +29,11 @@ class GeneralSpecifications {
   final Color turquoise3;
   final Color turquoise4;
   final Color turquoise5;
-  final Color turquoise6;
 
   final Color rBlushPink;
   final Color rSlight;
   final Color rDark;
+
 
 
   GeneralSpecifications(BuildContext context)
@@ -57,8 +58,7 @@ class GeneralSpecifications {
         turquoise4 = const Color.fromRGBO(103, 209, 165, 1),
         // #88E8AC
         turquoise5 = const Color.fromRGBO(136, 232, 172, 1),
-        // #B0F2BC
-        turquoise6 = const Color.fromRGBO(176, 242, 188, 1),
+
 
         // F7CAC9
         rBlushPink = const Color.fromRGBO(247, 202, 201, 1),
@@ -73,10 +73,98 @@ class GeneralSpecifications {
         black150 = const Color.fromRGBO(150, 150, 150, 1),
         black200 = const Color.fromRGBO(200, 200, 200, 1),
         black240 = const Color.fromRGBO(240, 240, 240, 1),
+        black245 = const Color.fromRGBO(245, 245, 245, 1),
+        black250 = const Color.fromRGBO(250, 250, 250, 1),
         pantoneShadow = const Color.fromRGBO(52, 147, 100, 0.15),
         pantoneShadow2 = const Color.fromRGBO(227, 232, 229, 1),
-        backgroundColor =const Color.fromRGBO(245, 245, 245, 1),
+        backgroundColor =const Color.fromRGBO(250, 250, 250, 1),
         startLocation = const Color.fromRGBO(255, 79, 15, 1),
-        endLocation = const Color.fromRGBO(255, 166, 115, 1),
-        time = const Color.fromRGBO(3, 166, 161, 1);
+        endLocation = const Color.fromRGBO(3, 166, 161, 1);
 }
+
+
+
+
+// Loại phần tử	Bo góc gợi ý (px)	Mô tả / ứng dụng
+// Button nhỏ, icon, chip	4–8	Nhẹ, hiện đại, vừa phải
+// Input field, card, container	8–12	Mềm mại nhưng vẫn có khối rõ ràng
+// Modal, bottom sheet, panel lớn	16–24	Dễ nhìn, thân thiện, tạo cảm giác nổi
+// Avatar / hình tròn	9999 (hoặc size / 2)	Để tròn tuyệt đối
+// Image tile, preview nhỏ	6–10	Giữ bố cục đẹp khi ghép nhiều ảnh
+// Large image / Banner	12–20	Giúp hình mềm mại, tránh góc sắc
+// App bar, navigation bar	0 hoặc 12	Tùy phong cách phẳng hoặc bo nhẹ
+// Card group / list item tổng hợp	10–16	Bo vừa phải để tách nhóm tự nhiên
+// class AppRadius {
+//   static const double small = 6;
+//   static const double medium = 10;
+//   static const double large = 16;
+//   static const double extraLarge = 24;
+//   static const double circle = 9999;
+// }
+
+
+// | Mức     | Size                        | Dùng cho |
+// | ------- | --------------------------- | -------- |
+// | `14`    | Tag, chip nhỏ               |          |
+// | `20`    | Nút, danh sách, textfield   |          |
+// | `24`    | Chuẩn (default Icon)        |          |
+// | `28–32` | Nav bar, card lớn           |          |
+// | `48+`   | Empty state, màn hình chính |          |
+//
+
+// class AppIconSize {
+//   static const double tiny = 14;
+//   static const double small = 18;
+//   static const double medium = 24;
+//   static const double large = 32;
+//   static const double extraLarge = 48;
+// }
+
+
+
+
+
+
+// | Mức  | Size                        | Dùng cho |
+// | ---- | --------------------------- | -------- |
+// | `32` | Tiêu đề lớn, màn hình chính |          |
+// | `24` | Tiêu đề trong section, card |          |
+// | `18` | Tiêu đề vừa, nút lớn        |          |
+// | `16` | Nội dung chính (paragraph)  |          |
+// | `14` | Mô tả phụ, label nhỏ        |          |
+// | `12` | Ghi chú, thời gian          |          |
+// | `11` | Caption nhỏ (hiếm dùng)     |          |
+
+
+// | Loại text           | Cỡ chữ (px) | Dùng cho                          | Gợi ý weight |
+// | ------------------- | ----------- | --------------------------------- | ------------ |
+// | **Display Large**   | 57          | Màn hình chính, tiêu đề chào mừng | 400          |
+// | **Display Medium**  | 45          | Banner lớn                        | 400          |
+// | **Display Small**   | 36          | Header lớn                        | 400          |
+// | **Headline Large**  | 32          | Tiêu đề chính trong màn           | 400–500      |
+// | **Headline Medium** | 28          | Phần nội dung nổi bật             | 500          |
+// | **Headline Small**  | 24          | Tiêu đề nhỏ trong card            | 500          |
+// | **Title Large**     | 22          | Thanh AppBar hoặc section title   | 500–600      |
+// | **Title Medium**    | 16          | Tiêu đề nút, card, list item      | 500–600      |
+// | **Title Small**     | 14          | Tiêu đề phụ, nhãn nhỏ             | 500          |
+// | **Body Large**      | 16          | Văn bản chính                     | 400          |
+// | **Body Medium**     | 14          | Nội dung phụ, mô tả ngắn          | 400          |
+// | **Body Small**      | 12          | Chú thích, timestamp, caption     | 400          |
+// | **Label Large**     | 14          | Nút, tag                          | 500–600      |
+// | **Label Medium**    | 12          | Text button nhỏ                   | 500          |
+// | **Label Small**     | 11          | Ghi chú cực nhỏ                   | 400          |
+//
+
+
+// class AppTextSize {
+//   static const double display = 32;
+//   static const double headline = 24;
+//   static const double title = 18;
+//   static const double body = 16;
+//   static const double caption = 14;
+//   static const double small = 12;
+// }
+
+
+
+

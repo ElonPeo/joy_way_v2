@@ -2,12 +2,13 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/widgets/animated_container/custom_animated_button.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import '../../../services/data_processing/map_processing.dart';
 import '../../../services/mapbox_services/general_map_services.dart';
 import '../../../services/mapbox_services/mapbox_config.dart';
-import '../../animated_container/animated_button.dart';
 import '../../animated_icons/loading_rive_icon.dart';
 
 class MapView extends StatefulWidget {
@@ -210,14 +211,18 @@ class _MapViewState extends State<MapView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              AnimatedButton(
+              CustomAnimatedButton(
                 color: Colors.black,
                 shadowColor: const Color.fromRGBO(0, 0, 0, 0.12),
                 height: 40,
                 width: 100,
-                text: 'Retry',
-                fontSize: 14,
                 onTap: _bootstrap,
+                child: Text(
+                    'Retry',
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ],
           ),

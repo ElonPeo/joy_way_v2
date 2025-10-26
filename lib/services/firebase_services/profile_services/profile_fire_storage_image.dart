@@ -213,10 +213,6 @@ class ProfileFireStorageImage {
 
 
 
-
-
-
-
   Future<({String? url, String? error})> getImageUrlById(String imageId) async {
     try {
       final viewer = _auth.currentUser;
@@ -268,15 +264,20 @@ class ProfileFireStorageImage {
   }
 
   /// Lấy cả avatar/background URL của MỘT user (dùng users/{uid}.avatarImageId/backgroundImageId)
-  Future<({String? avatarUrl, String? bgUrl, String? error})> getUserAvatarAndBackgroundUrls(String uid) async {
+  Future<({String? avatarUrl, String? bgUrl, String? error})>
+  getUserAvatarAndBackgroundUrls(String? uid) async {
+    if (uid == null) {
+      return (avatarUrl: null, bgUrl: null, error: 'Missing user ID');
+    }
     try {
       final userDoc = await _firestore.collection('users').doc(uid).get();
       if (!userDoc.exists) {
         return (avatarUrl: null, bgUrl: null, error: 'User not found');
       }
+
       final data = userDoc.data()!;
       final avatarId = data['avatarImageId'] as String?;
-      final bgId = data['backgroundImageId'] as String?;
+      final bgId     = data['backgroundImageId'] as String?;
 
       String? avatarUrl;
       String? bgUrl;
@@ -285,9 +286,7 @@ class ProfileFireStorageImage {
         final r = await getImageUrlById(avatarId);
         if (r.error == null) {
           avatarUrl = r.url;
-        } else if (r.error == 'Permission denied') {
-          // avatarUrl để null, nhưng vẫn trả error tổng hợp phía dưới nếu cần
-        } else {
+        } else if (r.error != 'Permission denied') {
           return (avatarUrl: null, bgUrl: null, error: 'Avatar: ${r.error}');
         }
       }
@@ -296,19 +295,17 @@ class ProfileFireStorageImage {
         final r = await getImageUrlById(bgId);
         if (r.error == null) {
           bgUrl = r.url;
-        } else if (r.error == 'Permission denied') {
-          // bgUrl để null
-        } else {
+        } else if (r.error != 'Permission denied') {
           return (avatarUrl: avatarUrl, bgUrl: null, error: 'Background: ${r.error}');
         }
       }
 
-      // Không coi permission denied là lỗi fatal -> trả về URL nào lấy được
       return (avatarUrl: avatarUrl, bgUrl: bgUrl, error: null);
     } catch (e) {
       return (avatarUrl: null, bgUrl: null, error: 'Failed to read user images: $e');
     }
   }
+
 
   /// Lấy URL avatar/background của CURRENT user nhanh gọn
   Future<({String? avatarUrl, String? bgUrl, String? error})> getCurrentUserAvatarAndBackgroundUrls() async {
@@ -316,6 +313,54 @@ class ProfileFireStorageImage {
     if (u == null) return (avatarUrl: null, bgUrl: null, error: 'User not logged in');
     return getUserAvatarAndBackgroundUrls(u.uid);
   }
+
+
+
+  /// Lấy URL ảnh avatar dựa trên users/{uid}.avatarImageId
+  Future<({String? url, String? error})> getAvatarUrlByUid(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      if (!userDoc.exists) {
+        return (url: null, error: 'User not found');
+      }
+
+      final data = userDoc.data()!;
+      final avatarId = data['avatarImageId'] as String?;
+
+      if (avatarId == null || avatarId.isEmpty) {
+        return (url: null, error: 'Avatar not set');
+      }
+
+      final r = await getImageUrlById(avatarId);
+      if (r.error != null) {
+        return (url: null, error: r.error);
+      }
+      return (url: r.url, error: null);
+    } catch (e) {
+      return (url: null, error: 'Failed to get avatar: $e');
+    }
+  }
+
+  /// Tiện cho UI: trả về ImageProvider từ uid (có ảnh fallback)
+  Future<ImageProvider> getAvatarProviderByUid(
+      String uid, {
+        ImageProvider? fallback,
+        String? defaultAvatarAssetPath,
+      }) async {
+    final r = await getAvatarUrlByUid(uid);
+
+    if (r.url != null && r.url!.isNotEmpty) {
+      return NetworkImage(r.url!);
+    }
+
+    if (fallback != null) return fallback;
+
+    if (defaultAvatarAssetPath != null && defaultAvatarAssetPath.isNotEmpty) {
+      return AssetImage(defaultAvatarAssetPath);
+    }
+    return const AssetImage('assets/background/photo_not_available.jpg');
+  }
+
 
 
 }
