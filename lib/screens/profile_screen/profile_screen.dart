@@ -290,7 +290,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildChild(GeneralSpecifications specs) {
     switch (_page) {
       case 0:
-        return const PostScreen();
+        return PostScreen(
+          isOwnerProfile: _isOwner,
+          userId: _targetUid,
+        );
       case 1:
         return AboutScreen(
           name: _userApp?.name,
@@ -306,7 +309,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 2:
         return const EvaluateScreen();
       default:
-        return const PostScreen();
+        return  PostScreen(
+          isOwnerProfile: _isOwner,
+          userId: _targetUid,
+        );
     }
   }
 
@@ -509,12 +515,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     TopBarProfile(
-                      isOwnerProfile: widget.isOwnerProfile,
+                      isOwnerProfile: _isOwner,
                       userName: _userApp?.userName ?? "",
-                      userId: _userApp?.userId ?? "",
-                      imageProvider: _avatarProvider(),
+                      userId: _targetUid ?? "",
+                      imageId: _userApp?.avatarImageId,
                     ),
-      
                   ],
                 ),
               ),

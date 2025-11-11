@@ -8,7 +8,9 @@ import 'package:joy_way/models/user/basic_user_info.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_firestore.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_fire_storage_image.dart';
 import 'package:joy_way/services/firebase_services/message_services/message_services.dart';
+import 'package:joy_way/widgets/animated_container/flashing_container.dart';
 
+import '../../widgets/photo_view/avatar_view.dart';
 import 'message_room_screen.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -20,7 +22,6 @@ class MessagesScreen extends StatefulWidget {
 
 class _MessagesScreenState extends State<MessagesScreen> {
   BasicUserInfo? _me;
-  ImageProvider _avatar = const AssetImage('assets/background/photo_not_available.jpg');
   late final String _myUid;
 
   final _pageCtrl = PageController();
@@ -33,21 +34,27 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _loadMe();
   }
 
+  void _goPage(int index) {
+    setState(() => _pageIndex = index);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageCtrl.hasClients) {
+        _pageCtrl.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+
   Future<void> _loadMe() async {
     final pf = ProfileFirestore();
     final r = await pf.getBasicUserInfo(_myUid);
     BasicUserInfo? me = r.user;
-
-    ImageProvider avatar = _avatar;
-    if (me?.avatarImageId != null && me!.avatarImageId!.isNotEmpty) {
-      final storage = ProfileFireStorageImage();
-      final ar = await storage.getImageUrlById(me.avatarImageId!);
-      if (ar.url != null) avatar = NetworkImage(ar.url!);
-    }
     if (!mounted) return;
     setState(() {
       _me = me;
-      _avatar = avatar;
     });
   }
 
@@ -60,7 +67,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -69,46 +75,204 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Container(
             height: 100,
             width: specs.screenWidth,
-            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15),
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(255, 255, 255, 0.85),
-              border: Border(bottom: BorderSide(width: 1, color: specs.black240)),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                CircleAvatar(radius: 25, backgroundImage: _avatar),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _me?.userName != null ? '@${_me!.userName}' : '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500),
+                Text(
+                  _me?.userName != null ? '@${_me!.userName}' : '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                      fontSize: 22, fontWeight: FontWeight.w500),
+                ),
+
+                ImageIcon(
+                    AssetImage(
+                        "assets/icons/setting/qr.png"),
+                    color: Colors.black,
+                    size: 20),
+
+              ],
+            ),
+          ),
+          Container(
+            height: 45,
+            width: specs.screenWidth - 30,
+            decoration: BoxDecoration(
+              color: specs.black240,
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 45,
+                  width: 45,
+                  child: Center(
+                    child: Container(
+                      height: 38,
+                      width: 38,
+                      decoration:  BoxDecoration(
+                          color: Colors.black, shape: BoxShape.circle),
+                      child: const Center(
+                        child: ImageIcon(
+                            AssetImage(
+                                "assets/icons/other_icons/search.png"),
+                            color: Colors.white,
+                            size: 20),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text("Search for messages",
+                    style: GoogleFonts.outfit(
+                        color: specs.black80, fontSize: 14)),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Container(
+            height: 80,
+            width: specs.screenWidth,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              children: [
+                SizedBox(
+                  height: 80,
+                  width: 60,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      AvatarView(
+                        size: 60,
+                        nameUser: _me?.name,
+                        imageId: _me?.avatarImageId,
+                      ),
+                      Text(
+                        "You",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 15,
+                ),
+                SizedBox(
+                  height: 80,
+                  width: 60,
+                  child: Column(
+                    children: [
+                      AvatarView(
+                        size: 60,
+                      ),
+                      Text(
+                        "",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 15,
+                ),
+                SizedBox(
+                  height: 80,
+                  width: 60,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 60,
+                        width: 60,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: specs.black240
+                        ),
+                        child: Center(
+                          child: ImageIcon(
+                            AssetImage("assets/icons/other_icons/plus.png"),
+                            color: specs.black100,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
 
+          SizedBox(
+            height: 15,
+          ),
           // ===== Header + Segmented =====
-          Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.center,
-            child: _HeaderSegmented(
-              index: _pageIndex,
-              onTap: (i) {
-                setState(() => _pageIndex = i);
-                _pageCtrl.animateToPage(i, duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
-              },
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => _goPage(0),
+                child: Container(
+                    height: 30,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: _pageIndex == 0 ? specs.pantoneColor4 : specs.black240,
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(100)
+                      )
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Messages",
+                        style: GoogleFonts.outfit(
+                          color: _pageIndex == 0 ? Colors.white : specs.black150,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    )),
+              ),
+              GestureDetector(
+                onTap: () => _goPage(1),
+                child: Container(
+                    height: 30,
+                    width: 130,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.horizontal(
+                          left: Radius.circular(100)
+                      ),
+                      color: _pageIndex == 1 ? specs.pantoneColor4 : specs.black240,
+                    ),
+                    child: Center(
+                      child: Text("Messages waiting",
+                        style: GoogleFonts.outfit(
+                          color: _pageIndex == 1 ? Colors.white : specs.black150,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    )),
+              ),
+
+            ],
           ),
 
           // ===== Body: PageView 2 trang =====
           Expanded(
             child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: MessageServices.I.streamRecentRooms(myUid: _myUid, limit: 100),
+              stream: MessageServices.I
+                  .streamRecentRooms(myUid: _myUid, limit: 100),
               builder: (ctx, snap) {
                 final docs = snap.data?.docs ?? const [];
                 // Chuyển thành list room đơn giản
@@ -116,7 +280,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   final m = d.data();
                   return _Room(
                     id: d.id,
-                    participants: List<String>.from(m['participants'] ?? const []),
+                    participants:
+                        List<String>.from(m['participants'] ?? const []),
                     lastMessage: (m['lastMessage'] ?? '') as String,
                     lastSenderId: (m['lastSenderId'] ?? '') as String,
                     unread: Map<String, dynamic>.from(m['unread'] ?? const {}),
@@ -124,16 +289,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   );
                 }).toList();
 
-                // Partition:
-                // Message: bạn đã từng trả lời (có message của bạn) hoặc không còn unread từ người kia
-                // Message waiting: tin người ta nhắn trước + còn unread với bạn
-                // => đơn giản: nếu unread[myUid] > 0 && lastSenderId != myUid => waiting
                 final waiting = rooms.where((r) {
                   final u = (r.unread[_myUid] ?? 0);
                   return u is int && u > 0 && r.lastSenderId != _myUid;
                 }).toList();
 
-                final normal = rooms.where((r) => !waiting.any((w) => w.id == r.id)).toList();
+                final normal = rooms
+                    .where((r) => !waiting.any((w) => w.id == r.id))
+                    .toList();
 
                 return PageView(
                   controller: _pageCtrl,
@@ -160,71 +323,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 }
 
-// ===================== Widgets =====================
-
-class _HeaderSegmented extends StatelessWidget {
-  final int index;
-  final ValueChanged<int> onTap;
-  const _HeaderSegmented({required this.index, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final specs = GeneralSpecifications(context);
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: specs.black240,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        children: [
-          _SegBtn(label: 'Message', selected: index == 0, onTap: () => onTap(0)),
-          _SegBtn(label: 'Message waiting', selected: index == 1, onTap: () => onTap(1)),
-        ],
-      ),
-    );
-  }
-}
-
-class _SegBtn extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _SegBtn({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          alignment: Alignment.center,
-          height: 32,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            label,
-            style: GoogleFonts.outfit(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: selected ? Colors.black : Colors.black87,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _RoomList extends StatelessWidget {
   final List<_Room> rooms;
   final String myUid;
+
   const _RoomList({super.key, required this.rooms, required this.myUid});
 
   @override
@@ -244,6 +347,7 @@ class _RoomList extends StatelessWidget {
 class _RoomTile extends StatefulWidget {
   final _Room room;
   final String myUid;
+
   const _RoomTile({required this.room, required this.myUid});
 
   @override
@@ -252,7 +356,6 @@ class _RoomTile extends StatefulWidget {
 
 class _RoomTileState extends State<_RoomTile> {
   BasicUserInfo? _peer;
-  ImageProvider _avatar = const AssetImage('assets/background/photo_not_available.jpg');
 
   @override
   void initState() {
@@ -261,31 +364,27 @@ class _RoomTileState extends State<_RoomTile> {
   }
 
   Future<void> _loadPeer() async {
-    final peerId = widget.room.participants.firstWhere((e) => e != widget.myUid, orElse: () => widget.myUid);
+    final peerId = widget.room.participants
+        .firstWhere((e) => e != widget.myUid, orElse: () => widget.myUid);
     final pf = ProfileFirestore();
     final r = await pf.getBasicUserInfo(peerId);
     BasicUserInfo? peer = r.user;
 
-    ImageProvider avatar = _avatar;
-    if (peer?.avatarImageId != null && peer!.avatarImageId!.isNotEmpty) {
-      final storage = ProfileFireStorageImage();
-      final ar = await storage.getImageUrlById(peer.avatarImageId!);
-      if (ar.url != null) avatar = NetworkImage(ar.url!);
-    }
     if (!mounted) return;
     setState(() {
       _peer = peer;
-      _avatar = avatar;
+
     });
   }
 
   void _openRoom() {
-    final peerId = widget.room.participants.firstWhere((e) => e != widget.myUid, orElse: () => widget.myUid);
+    final peerId = widget.room.participants
+        .firstWhere((e) => e != widget.myUid, orElse: () => widget.myUid);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => MessageRoomScreen(
         userName: _peer?.userName != null ? '@${_peer!.userName}' : 'Unknown',
         userId: peerId,
-        imageProvider: _avatar,
+        imageId: _peer?.avatarImageId,
       ),
     ));
   }
@@ -295,35 +394,61 @@ class _RoomTileState extends State<_RoomTile> {
     final specs = GeneralSpecifications(context);
     final unreadMine = (widget.room.unread[widget.myUid] ?? 0);
     final hasUnread = unreadMine is int && unreadMine > 0;
-
-    return ListTile(
+    return GestureDetector(
       onTap: _openRoom,
-      leading: CircleAvatar(radius: 22, backgroundImage: _avatar),
-      title: Text(
-        _peer?.userName != null ? '@${_peer!.userName}' : 'Unknown',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        widget.room.lastMessage,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.outfit(fontSize: 13, color: Colors.black54),
-      ),
-      trailing: hasUnread
-          ? Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.redAccent, borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 10
         ),
-        child: Text('$unreadMine', style: const TextStyle(color: Colors.white, fontSize: 12)),
-      )
-          : Icon(Icons.chevron_right, color: specs.black200),
+        color: Colors.transparent,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                AvatarView(
+                  nameUser: _peer?.userName,
+                  imageId: _peer?.avatarImageId,
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _peer?.userName != null ? '@${_peer!.userName}' : 'Unknown',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      widget.room.lastMessage,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(fontSize: 13, color: Colors.black54),
+                    ),
+                  ],
+                )
+              ],
+            ),
+            ImageIcon(
+              AssetImage(
+                "assets/icons/other_icons/angle-right.png",
+              ),
+              size: 18,
+              color: specs.black240,
+            )
+
+          ],
+        ),
+      ),
     );
   }
 }
-
 
 class _Room {
   final String id;

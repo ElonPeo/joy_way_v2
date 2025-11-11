@@ -21,7 +21,6 @@ class TimeProcessing {
     if (diff.inMinutes < 60) return "${diff.inMinutes} minutes ago";
     if (diff.inHours < 24) return "${diff.inHours} hours ago";
     if (diff.inDays < 7) return "${diff.inDays} days ago";
-
     return DateFormat('dd/MM/yyyy').format(postTime);
   }
 
@@ -50,21 +49,22 @@ class TimeProcessing {
   }
 
   /// Tách định dạng riêng ngày + giờ từ ISO string
-  static Map<String, String> formatDepartureTime2(String? isoString) {
-    if (isoString == null || isoString.isEmpty) {
-      return {'date': 'Invalid date', 'time': 'Invalid time'};
+  static Map<String, String> formatDepartureTime2(DateTime? time) {
+    if (time == null) {
+      return {'time': '', 'date': ''};
     }
 
     try {
-      final dateTime = DateTime.parse(isoString);
-      final dateFormatted = DateFormat('EEE, d MMM').format(dateTime);
-      final timeFormatted = DateFormat('hh:mm a').format(dateTime);
-      return {'date': dateFormatted, 'time': timeFormatted};
+      final dateFormatted = DateFormat('MMMM dd, yyyy').format(time); // 🔹 March 06, 2025
+      final timeFormatted = DateFormat('HH:mm').format(time);         // 🔹 08:45 (24h)
+      return {
+        'date': dateFormatted,
+        'time': timeFormatted,
+      };
     } catch (_) {
-      return {'date': 'Invalid date', 'time': 'Invalid time'};
+      return {'time': '', 'date': ''};
     }
   }
-
   /// Gộp ngày và giờ (dùng khi người dùng chọn riêng ngày + giờ)
   static DateTime combineDateAndTime(DateTime date, DateTime time) {
     return DateTime(

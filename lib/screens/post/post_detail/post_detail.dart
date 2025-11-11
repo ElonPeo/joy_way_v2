@@ -129,7 +129,9 @@ class _PostDetailState extends State<PostDetail> {
                             const SizedBox(
                               height: 15,
                             ),
-                            RequestJoinButton(),
+                            RequestJoinButton(
+                              post: widget.postDisplay.post,
+                            ),
 
                             SizedBox(
                               height: specs.screenHeight * 0.3,

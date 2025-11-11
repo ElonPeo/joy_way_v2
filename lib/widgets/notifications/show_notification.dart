@@ -171,7 +171,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
+                            color: Color.fromRGBO(255, 255, 255, 0.8)
                           ),
                           child: Stack(
                             children: [
@@ -228,7 +228,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                             Text(
                                               _titleErr[widget.type],
                                               style: const TextStyle(
-                                                color: Colors.white,
+                                                color: Colors.black,
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 15,
                                               ),
@@ -236,7 +236,7 @@ class __AnimatedSnackBarState extends State<_AnimatedSnackBar>
                                             Text(
                                               widget.errorMessage,
                                               style: const TextStyle(
-                                                  color: Color.fromRGBO(240, 240, 240, 1),
+                                                  color: Color.fromRGBO(100, 100, 100, 1),
                                                   fontSize: 11
                                               ),
                                             ),

@@ -16,7 +16,7 @@ class JourneyInformation extends StatelessWidget {
       width: specs.screenWidth - 15,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(6),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -42,7 +42,7 @@ class JourneyInformation extends StatelessWidget {
             margin: EdgeInsets.symmetric(vertical: 10),
             width: specs.screenWidth,
             height: 1,
-            color: specs.black200,
+            color: specs.black240,
           ),
 
           Container(
@@ -151,3 +151,6 @@ class JourneyInformation extends StatelessWidget {
     );
   }
 }
+
+
+

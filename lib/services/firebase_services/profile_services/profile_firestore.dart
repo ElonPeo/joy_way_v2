@@ -253,5 +253,20 @@ class ProfileFirestore {
     return getBasicUserInfo(uid);
   }
 
+  Future<String?> getUserNameById(String userId, BuildContext context) async {
+    if (userId.isEmpty) return null;
+
+    try {
+      final doc = await _db.collection('users').doc(userId).get();
+      if (!doc.exists) return null;
+
+      final data = doc.data();
+      return data?['userName'] as String?;
+    } catch (e) {
+      print('Err: $e');
+      return null;
+    }
+  }
+
 
 }

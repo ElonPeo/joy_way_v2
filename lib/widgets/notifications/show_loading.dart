@@ -159,7 +159,8 @@ class _AnimatedLoadingSnackBarState extends State<_AnimatedLoadingSnackBar>
                     bottomRight: Radius.circular(30),
                   ),
                   child: Container(
-                    height: 165, width: w, color: Colors.white,
+                    height: 140,
+                    width: w, color: Colors.white,
                     child: Stack(
                       children: [
                         Positioned(
@@ -182,12 +183,12 @@ class _AnimatedLoadingSnackBarState extends State<_AnimatedLoadingSnackBar>
                           children: [
                             const SizedBox(width: 25),
                             Container(
-                              height: 70, width: 70,
+                              height: 55, width: 55,
                               decoration: BoxDecoration(
                                 color: bgColor, borderRadius: BorderRadius.circular(15),
                               ),
                               child: const Center(
-                                child: LoadingRiveIcon(fatherHeight: 50, fatherWidth: 50),
+                                child: LoadingRiveIcon(fatherHeight: 40, fatherWidth: 40),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -208,7 +209,7 @@ class _AnimatedLoadingSnackBarState extends State<_AnimatedLoadingSnackBar>
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 20),
+                            const SizedBox(width: 10),
                           ],
                         ),
                       ],

@@ -19,7 +19,6 @@ class _ScheduleState extends State<Schedule> {
 
   @override
   Widget build(BuildContext context) {
-
     final specs = GeneralSpecifications(context);
     return Container(
       width: specs.screenWidth - 30,
@@ -109,10 +108,14 @@ class _ScheduleState extends State<Schedule> {
                               const SizedBox(
                                 height: 5,
                               ),
-                              Container(
+                              SizedBox(
                                 width: specs.screenWidth - 130,
                                 child: Text(
                                   "Start in ${widget.post.departureName}",
+                                  strutStyle: const StrutStyle(
+                                    height: 1.25,
+                                    forceStrutHeight: true,
+                                  ),
                                   style: GoogleFonts.outfit(
                                       fontSize: 12,
                                       color: specs.black100,
@@ -202,13 +205,17 @@ class _ScheduleState extends State<Schedule> {
                                     fontWeight: FontWeight.w500
                                 ),
                               ),
-                              const SizedBox(
+                              SizedBox(
                                 height: 5,
                               ),
                               Container(
                                 width: specs.screenWidth - 130,
                                 child: Text(
-                                  "The journey end in ${widget.post.arrivalName}",
+                                  "End in ${widget.post.arrivalName}",
+                                  strutStyle: const StrutStyle(
+                                    height: 1.25,
+                                    forceStrutHeight: true,
+                                  ),
                                   style: GoogleFonts.outfit(
                                       fontSize: 12,
                                       color: specs.black100,
@@ -218,7 +225,7 @@ class _ScheduleState extends State<Schedule> {
                               ),
                             ],
                           ),
-                        )
+                        ),
 
                       ],
                     ),

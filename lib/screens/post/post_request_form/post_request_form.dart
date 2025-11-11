@@ -1,15 +1,19 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/config/general_specifications.dart';
 import 'package:joy_way/screens/post/post_request_form/components/bottom_request_bar.dart';
+import 'package:joy_way/screens/post/post_request_form/pages/end_request_page.dart';
+import 'package:joy_way/screens/post/post_request_form/pages/start_request_page.dart';
+import '../../../models/post/post.dart';
+import '../../../models/request/request_journey/components/end_request_info.dart';
+import '../../../models/request/request_journey/components/start_request_info.dart';
 import '../../../widgets/animated_container/custom_animated_button.dart';
 import '../edit_post/components/step_bar.dart';
 
-
 class PostRequestForm extends StatefulWidget {
-
-  PostRequestForm({super.key});
-
+  final Post post;
+  const PostRequestForm({super.key, required this.post});
   @override
   State<PostRequestForm> createState() => _PostRequestFormState();
 }
@@ -22,6 +26,10 @@ class _PostRequestFormState extends State<PostRequestForm> {
     "End",
     "Confirm",
   ];
+
+  StartRequestInfo? _startRequestInfo;
+  EndRequestInfo? _endRequestInfo;
+
   void _goTo(int target) {
     if (target == _page) return;
     if ((target - _page).abs() > 1) {
@@ -38,6 +46,7 @@ class _PostRequestFormState extends State<PostRequestForm> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
@@ -51,15 +60,15 @@ class _PostRequestFormState extends State<PostRequestForm> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(bottom: BorderSide(width: 1, color: specs.black240)),
+              border:
+                  Border(bottom: BorderSide(width: 1, color: specs.black240)),
             ),
             child: Column(
               children: [
                 SizedBox(
                   height: 80,
                   width: specs.screenWidth,
-                  child:
-                  Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -68,7 +77,8 @@ class _PostRequestFormState extends State<PostRequestForm> {
                         child: CustomAnimatedButton(
                           onTap: () async {
                             FocusScope.of(context).unfocus();
-                            await Future.delayed(const Duration(milliseconds: 300));
+                            await Future.delayed(
+                                const Duration(milliseconds: 300));
                             Navigator.pop(context);
                           },
                           height: 30,
@@ -95,7 +105,8 @@ class _PostRequestFormState extends State<PostRequestForm> {
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.2,
                             ),
-                          ),),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 50),
                     ],
@@ -127,17 +138,37 @@ class _PostRequestFormState extends State<PostRequestForm> {
                 setState(() => _page = value);
               },
               children: [
-             
+                StartRequestPage(
+                  startRequestInfo: _startRequestInfo,
+                  onStartRequestInfoChanged: (v) {
+                    setState(() {
+                      _startRequestInfo = v;
+                    });
+                  },
+                ),
+                EndRequestPage(
+                  endRequestInfo: _endRequestInfo,
+                  onEndRequestInfoChanged: (v) {
+                    setState(() {
+                      _endRequestInfo = v;
+                    });
+                  },
+                ),
+                ListView(
+                  children: [
+
+                  ],
+                )
               ],
             ),
           ),
           BottomRequestBar(
               page: _page,
-              onPage: (v) {
-                setState(() {
-                  _page = v;
-                });
-              }),
+              onPage: (value) => _goTo(value),
+              post: widget.post,
+              startRequestInfo: _startRequestInfo,
+              endRequestInfo: _endRequestInfo,
+          )
         ],
       ),
     );

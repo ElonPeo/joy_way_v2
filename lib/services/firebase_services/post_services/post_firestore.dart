@@ -17,6 +17,13 @@ class PostFirestore {
   })  : _db = db ?? FirebaseFirestore.instance,
         _auth = auth ?? FirebaseAuth.instance;
 
+  bool isOwnPost(String ownerId) {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    return ownerId == user.uid;
+  }
+
+
   /// Trả về `null` nếu hợp lệ
   String? checkValidStartInfo(StartInfo startInfo) {
     if (startInfo.departureName.trim().isEmpty) {
@@ -150,6 +157,9 @@ class PostFirestore {
   }
 
 
+
+
+
   Future<List<PostDisplay>> getLatestPostDisplays() async {
     try {
       final snapshot = await _db
@@ -187,6 +197,32 @@ class PostFirestore {
     }
   }
 
+
+  Future<List<Post>> getPostsByOwnerId(String ownerId) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('ownerId', isEqualTo: ownerId)
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => Post.fromDoc(doc)).toList();
+  }
+
+  Future<Post?> getLatestPostOfCurrentUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception("Chưa đăng nhập.");
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('ownerId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    return Post.fromDoc(snapshot.docs.first);
+  }
 
 
 

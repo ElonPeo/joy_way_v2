@@ -5,6 +5,16 @@ enum VehicleType { motorbike, car, other }
 enum ExpenseType { free, share }
 enum PostVisibility { public, friends, private }
 
+// trạng thái bài đăng / hành trình
+enum PostStatus {
+  findingCompanion, // đang tìm người đi cùng (mặc định)
+  prepareToDepart, // chuẩn bị xuất phát
+  hasDeparted,  // đã xuất phát
+  isTravelingWithCompanions, // đang đi cùng những người đồng hành
+  finished,         // đã hoàn thành
+  canceled,         // đã huỷ
+}
+
 class Post {
   // IDs
   final String id;
@@ -16,7 +26,6 @@ class Post {
   final DateTime departureTime;
   final VehicleType vehicleType;
   final int availableSeats;
-
 
   // Arrival
   final GeoPoint arrivalCoordinate;
@@ -32,9 +41,11 @@ class Post {
   final VisibilityPostInfo visibility;
 
   // Meta
-  final List<String> acceptedRequestIds;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  // Trạng thái hành trình/bài đăng
+  final PostStatus status;
 
   const Post({
     required this.id,
@@ -51,9 +62,9 @@ class Post {
     this.amount,
     this.description,
     this.visibility = const VisibilityPostInfo(),
-    this.acceptedRequestIds = const [],
     this.createdAt,
     this.updatedAt,
+    this.status = PostStatus.findingCompanion,
   });
 
   // ===== Mapping =====
@@ -72,7 +83,7 @@ class Post {
     'amount': amount,
     'description': description,
     'visibility': visibility.toMap(),
-    'acceptedRequestIds': acceptedRequestIds,
+    'status': status.name,
     'createdAt': createdAt == null
         ? FieldValue.serverTimestamp()
         : Timestamp.fromDate(createdAt!),
@@ -87,10 +98,20 @@ class Post {
       return null;
     }
 
-    VehicleType _veh(String? s) =>
-        VehicleType.values.firstWhere((e) => e.name == s, orElse: () => VehicleType.other);
-    ExpenseType _exp(String? s) =>
-        ExpenseType.values.firstWhere((e) => e.name == s, orElse: () => ExpenseType.free);
+    VehicleType _veh(String? s) => VehicleType.values.firstWhere(
+          (e) => e.name == s,
+      orElse: () => VehicleType.other,
+    );
+
+    ExpenseType _exp(String? s) => ExpenseType.values.firstWhere(
+          (e) => e.name == s,
+      orElse: () => ExpenseType.free,
+    );
+
+    PostStatus _status(String? s) => PostStatus.values.firstWhere(
+          (e) => e.name == s,
+      orElse: () => PostStatus.findingCompanion,
+    );
 
     int? _toInt(dynamic v) {
       if (v == null) return null;
@@ -102,22 +123,27 @@ class Post {
     return Post(
       id: id,
       ownerId: (m['ownerId'] ?? '') as String,
-      departureCoordinate: (m['departureCoordinate'] as GeoPoint?) ?? const GeoPoint(0, 0),
+      departureCoordinate:
+      (m['departureCoordinate'] as GeoPoint?) ?? const GeoPoint(0, 0),
       departureName: (m['departureName'] ?? '') as String,
-      departureTime: _toDate(m['departureTime']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      departureTime:
+      _toDate(m['departureTime']) ?? DateTime.fromMillisecondsSinceEpoch(0),
       vehicleType: _veh(m['vehicleType'] as String?),
       availableSeats: _toInt(m['availableSeats']) ?? 0,
-      arrivalCoordinate: (m['arrivalCoordinate'] as GeoPoint?) ?? const GeoPoint(0, 0),
+      arrivalCoordinate:
+      (m['arrivalCoordinate'] as GeoPoint?) ?? const GeoPoint(0, 0),
       arrivalName: (m['arrivalName'] ?? '') as String,
       arrivalTime: _toDate(m['arrivalTime']),
       type: _exp(m['type'] as String?),
       amount: _toInt(m['amount']),
       description: m['description'] as String?,
-      visibility:
-      VisibilityPostInfo.fromMap((m['visibility'] as Map?)?.cast<String, dynamic>()),
-      acceptedRequestIds: List<String>.from(m['acceptedRequestIds'] ?? const []),
+      visibility: VisibilityPostInfo.fromMap(
+        (m['visibility'] as Map?)?.cast<String, dynamic>(),
+      ),
+
       createdAt: _toDate(m['createdAt']),
       updatedAt: _toDate(m['updatedAt']),
+      status: _status(m['status'] as String?),
     );
   }
 
@@ -144,6 +170,7 @@ class Post {
     List<String>? acceptedRequestIds,
     DateTime? createdAt,
     DateTime? updatedAt,
+    PostStatus? status,
   }) {
     return Post(
       id: id ?? this.id,
@@ -160,9 +187,9 @@ class Post {
       amount: amount ?? this.amount,
       description: description ?? this.description,
       visibility: visibility ?? this.visibility,
-      acceptedRequestIds: acceptedRequestIds ?? this.acceptedRequestIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
     );
   }
 

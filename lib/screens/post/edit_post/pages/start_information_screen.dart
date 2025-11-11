@@ -215,7 +215,7 @@ class _StartInformationScreenState extends State<StartInformationScreen> {
             ],
           ),
         ),
-        SizedBox(height: specs.screenHeight * 0.4),
+        SizedBox(height: specs.screenHeight * 0.3),
       ],
     );
   }

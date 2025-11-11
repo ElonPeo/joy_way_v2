@@ -34,6 +34,9 @@ class GeneralSpecifications {
   final Color rSlight;
   final Color rDark;
 
+  final Color yLight;
+
+
 
 
   GeneralSpecifications(BuildContext context)
@@ -60,12 +63,16 @@ class GeneralSpecifications {
         turquoise5 = const Color.fromRGBO(136, 232, 172, 1),
 
 
+
+
         // F7CAC9
         rBlushPink = const Color.fromRGBO(247, 202, 201, 1),
         // F75270
         rSlight = const Color.fromRGBO(247, 82, 112, 1),
         // DC143C
         rDark = const Color.fromRGBO(220, 20, 60, 1),
+
+        yLight = const Color.fromRGBO(254, 238, 145, 1),
 
 
         black80 = const Color.fromRGBO(80, 80, 80, 1),

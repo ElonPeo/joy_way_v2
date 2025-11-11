@@ -8,18 +8,29 @@ import 'basic_statistics.dart';
 
 
 class PostScreen extends StatelessWidget {
-  const PostScreen({super.key});
+  final bool isOwnerProfile;
+  final String? userId;
+
+  const PostScreen({
+    super.key,
+    required this.isOwnerProfile,
+    required this.userId,
+  });
+
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        BasicStatistics(),
+        BasicStatistics(
+          isOwnerProfile: isOwnerProfile,
+          userId: userId,
+        ),
         Container(
           height: 160,
           width: specs.screenWidth,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white
           ),
         ),

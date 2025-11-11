@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/config/general_specifications.dart';
 import 'package:joy_way/models/user/basic_user_info.dart';
 import 'package:joy_way/services/firebase_services/profile_services/profile_fire_storage_image.dart';
+import 'package:joy_way/widgets/photo_view/avatar_view.dart';
 
 import '../../../profile_screen/profile_screen.dart';
 
@@ -80,64 +81,6 @@ class _UserTagState extends State<UserTag> {
     final specs = GeneralSpecifications(context);
     final u = widget.userTagInformation;
 
-    final initials = ((u.name?.isNotEmpty ?? false)
-        ? u.name!.characters.first
-        : (u.userName.isNotEmpty ? u.userName.characters.first : '?'))
-        .toUpperCase();
-
-    Widget avatar;
-    if (_loading) {
-      avatar = CircleAvatar(
-        radius: 25,
-        backgroundColor: specs.black200,
-        child: const SizedBox(
-          height: 18,
-          width: 18,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
-    } else if (_avatarUrl != null) {
-      avatar = ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: Image.network(
-          _avatarUrl!,
-          height: 50,
-          width: 50,
-          fit: BoxFit.cover,
-          // giúp UX mượt hơn khi tải ảnh
-          loadingBuilder: (c, child, progress) {
-            if (progress == null) return child;
-            return Container(
-              height: 50, width: 50, color: specs.black200,
-              alignment: Alignment.center,
-              child: const SizedBox(
-                height: 16, width: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            );
-          },
-          errorBuilder: (c, e, s) {
-            return CircleAvatar(
-              radius: 25,
-              backgroundColor: specs.black200,
-              child: Text(
-                initials,
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
-              ),
-            );
-          },
-        ),
-      );
-    } else {
-      avatar = CircleAvatar(
-        radius: 25,
-        backgroundColor: specs.black200,
-        child: Text(
-          initials,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
-        ),
-      );
-    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -164,7 +107,11 @@ class _UserTagState extends State<UserTag> {
         color: _pressed ? specs.black200 : Colors.white,
         child: Row(
           children: [
-            avatar,
+            AvatarView(
+              size: 50,
+              nameUser: u.userName,
+              imageId: u.avatarImageId,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: SizedBox(

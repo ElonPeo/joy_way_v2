@@ -1,12 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
-class ScaleContainer extends StatefulWidget {
+
+
+class ScaleContainer extends StatelessWidget{
   final double fatherWidth;
   final double fatherHeight;
   final Widget child;
   final Duration duration;
   final bool animation;
   final Curve curve;
+  final double minS;
+  final double maxS;
 
   const ScaleContainer({
     super.key,
@@ -16,30 +22,27 @@ class ScaleContainer extends StatefulWidget {
     required this.child,
     this.duration = const Duration(milliseconds: 500),
     this.curve = Curves.easeOutExpo,
+    this.minS = 0.8,
+    this.maxS = 1,
   });
 
   @override
-  State<ScaleContainer> createState() => _ScaleContainerState();
-}
-
-class _ScaleContainerState extends State<ScaleContainer> {
-  @override
   Widget build(BuildContext context) {
     return Container(
-      height: widget.fatherHeight,
-      width: widget.fatherHeight,
+      height: fatherHeight,
+      width: fatherHeight,
       child: Center(
         child: Stack(
           children: [
             AnimatedScale(
-              scale: widget.animation ? 1 : 0.8,
-              duration: widget.duration,
-              curve: widget.curve,
+              scale: animation ? maxS : minS,
+              duration: duration,
+              curve: curve,
               child: AnimatedOpacity(
-                opacity: widget.animation ? 1 : 0,
-                duration: widget.duration,
-                curve: widget.curve,
-                child: widget.child,
+                opacity: animation ? 1 : 0,
+                duration: duration,
+                curve: curve,
+                child: child,
               ),
             ),
           ],
@@ -47,4 +50,5 @@ class _ScaleContainerState extends State<ScaleContainer> {
       ),
     );
   }
+
 }

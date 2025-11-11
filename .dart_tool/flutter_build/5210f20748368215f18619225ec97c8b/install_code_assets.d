@@ -1,0 +1,1 @@
+ D:\\joy_way\\.dart_tool\\flutter_build\\5210f20748368215f18619225ec97c8b\\native_assets.json: 

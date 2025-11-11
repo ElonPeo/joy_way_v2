@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/config/general_specifications.dart';
+import 'package:joy_way/widgets/photo_view/avatar_view.dart';
 
 import '../../../services/firebase_services/message_services/message_services.dart';
 import '../../../widgets/animated_container/custom_animated_button.dart';
@@ -11,11 +12,11 @@ import '../../../widgets/animated_container/custom_animated_button.dart';
 class MessageRoomScreen extends StatefulWidget{
   final String userName;
   final String userId;
-  final ImageProvider? imageProvider;
+  final String? imageId;
   const MessageRoomScreen({
     super.key,
     required this.userName,
-    required this.imageProvider,
+    required this.imageId,
     required this.userId,
   });
 
@@ -105,18 +106,26 @@ class _MessageRoomState extends State<MessageRoomScreen> {
                     ),
                   ),
                 ),
-                if (widget.imageProvider != null) ...[
-                  CircleAvatar(radius: 16, backgroundImage: widget.imageProvider),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  child: Text(
-                    widget.userName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                ),
+                Row(
+                  children: [
+                    AvatarView(
+                      imageId: widget.imageId,
+                      nameUser: widget.userName,
+                      size: 45,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      widget.userName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                )
+
+
               ],
             ),
           ),
