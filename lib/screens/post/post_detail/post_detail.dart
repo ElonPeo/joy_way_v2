@@ -2,13 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/models/post/post_display.dart';
+import 'package:joy_way/screens/post/post_detail/components/passenger_statistic.dart';
+import 'package:joy_way/screens/post/post_detail/components/request_statistic.dart';
+import 'package:joy_way/screens/post/post_detail/components/schedule/post_schedule.dart';
 import '../../../config/general_specifications.dart';
 import '../../../widgets/animated_container/custom_animated_button.dart';
-import 'components/companion_statistics.dart';
-import 'components/journey_information.dart';
 import 'components/owner_info.dart';
+import 'components/post_information.dart';
 import 'components/request_join_button.dart';
-import 'components/schedule.dart';
 
 
 
@@ -74,7 +75,7 @@ class _PostDetailState extends State<PostDetail> {
                       width: specs.screenWidth - 140,
                       child: Center(
                         child: Text(
-                          "Hello",
+                          "Post Detail",
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontSize: 22,
@@ -89,58 +90,51 @@ class _PostDetailState extends State<PostDetail> {
                 ),
               ),
             ),
-            Container(
-                width: specs.screenWidth,
-                height: specs.screenHeight - 97,
-                child: Stack(
-                  children: [
-                    Container(
-                      width: specs.screenWidth,
-                      height: specs.screenHeight - 97,
-                      child: ListView(),
-                    ),
-                    Container(
-                        width: specs.screenWidth,
-                        height: specs.screenHeight - 97,
-                        child: ListView(
-                          padding:
-                          EdgeInsets.only(top: 100, left: 15, right: 15),
-                          children: [
-                            OwnerInfo(
-                              ownerInfo: widget.postDisplay.userInfo,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            CompanionStatistics(),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            JourneyInformation(
-                              post: widget.postDisplay.post,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-
-                            Schedule(
-                              post: widget.postDisplay.post,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            RequestJoinButton(
-                              post: widget.postDisplay.post,
-                            ),
-
-                            SizedBox(
-                              height: specs.screenHeight * 0.3,
-                            ),
-
-                          ],
-                        )),
-                  ],
-                ))
+            Expanded(
+              child: ListView(
+                padding:
+                EdgeInsets.only(top: 15, left: 15, right: 15),
+                children: [
+                  OwnerInfo(
+                    ownerInfo: widget.postDisplay.userInfo,
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      PassengerStatistic(postId: widget.postDisplay.post.id, seat: widget.postDisplay.post.availableSeats),
+                      RequestStatistic(postId: widget.postDisplay.post.id, maxRequest: 30),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  PostInformation(
+                    post: widget.postDisplay.post,
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+              
+                  PostSchedule(
+                    post: widget.postDisplay.post,
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  RequestJoinButton(
+                    post: widget.postDisplay.post,
+                  ),
+              
+                  SizedBox(
+                    height: specs.screenHeight * 0.3,
+                  ),
+              
+                ],
+              ),
+            )
           ],
         ));
   }

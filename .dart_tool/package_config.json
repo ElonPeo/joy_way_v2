@@ -44,6 +44,36 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "camera",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/camera-0.10.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "camera_android",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/camera_android-0.10.10+6",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "camera_avfoundation",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/camera_avfoundation-0.9.21+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "camera_platform_interface",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/camera_platform_interface-2.12.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "camera_web",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/camera_web-0.3.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "characters",
       "rootUri": "file:///D:/pub-cache/hosted/pub.dev/characters-1.4.0",
       "packageUri": "lib/",
@@ -386,6 +416,24 @@
       "languageVersion": "3.7"
     },
     {
+      "name": "google_mlkit_barcode_scanning",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/google_mlkit_barcode_scanning-0.14.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    },
+    {
+      "name": "google_mlkit_commons",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/google_mlkit_commons-0.11.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    },
+    {
+      "name": "google_mlkit_text_recognition",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.15.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    },
+    {
       "name": "graphs",
       "rootUri": "file:///D:/pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
@@ -690,6 +738,12 @@
       "rootUri": "file:///D:/pub-cache/hosted/pub.dev/stream_channel-2.1.4",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "stream_transform",
+      "rootUri": "file:///D:/pub-cache/hosted/pub.dev/stream_transform-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
     },
     {
       "name": "string_scanner",

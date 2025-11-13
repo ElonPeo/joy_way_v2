@@ -1,9 +1,8 @@
-import 'dart:math' as math;
+
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:joy_way/config/general_specifications.dart';
-import 'package:joy_way/screens/journey_screen/components/journey_status.dart';
 import 'package:joy_way/services/data_processing/location_name_handling.dart';
 import 'package:joy_way/services/data_processing/time_processing.dart';
 import 'package:joy_way/services/firebase_services/post_services/post_firestore.dart';
@@ -13,14 +12,14 @@ import 'package:joy_way/widgets/animated_container/scale_container.dart';
 
 import '../../../models/post/post.dart';
 import '../../../widgets/notifications/show_notification.dart';
+import '../journey_detail/components/journey_status_card.dart';
+import '../journey_detail/view/owner_journey_view.dart';
+
 
 class JourneyCard extends StatefulWidget {
   final Post post;
 
   const JourneyCard({super.key, required this.post});
-
-
-
 
   @override
   State<JourneyCard> createState() => _JourneyCardState();
@@ -91,7 +90,7 @@ class _JourneyCardState extends State<JourneyCard> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16)
           ),
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
               Container(
@@ -99,13 +98,13 @@ class _JourneyCardState extends State<JourneyCard> {
                 height: 20,
                 decoration: BoxDecoration(
                   color: specs.black240,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(100),
                     bottomRight: Radius.circular(100),
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               Row(
@@ -131,7 +130,7 @@ class _JourneyCardState extends State<JourneyCard> {
                   )
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
 
@@ -218,76 +217,8 @@ class _JourneyCardState extends State<JourneyCard> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 10,
-              ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Vehicle",
-                        style: GoogleFonts.outfit(
-                          color: specs.black150,
-                          fontSize: 14,
-                        )
-                      ),
-                      Text(
-                          widget.post.vehicleType.name,
-                          style: GoogleFonts.outfit(
-                              fontSize: 16,
-                            fontWeight: FontWeight.w600
-                          )
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                          "Num seat",
-                          style: GoogleFonts.outfit(
-                              color: specs.black150,
-                              fontSize: 14,
-                          )
-                      ),
-                      Text(
-                          widget.post.availableSeats.toString(),
-                          style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600
-                          )
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          "Share",
-                          style: GoogleFonts.outfit(
-                              color: specs.black150,
-                              fontSize: 14,
-                          )
-                      ),
-                      Text(
-                          widget.post.type.name,
-                          style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600
-                          )
-                      ),
-                    ],
-                  )
-                ],
-              ),
-
-
               Container(
-                margin: EdgeInsets.symmetric(vertical: 5),
+                margin: const EdgeInsets.symmetric(vertical: 5),
                 decoration: BoxDecoration(
                     color: specs.black240,
                   border: Border(
@@ -302,8 +233,10 @@ class _JourneyCardState extends State<JourneyCard> {
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -313,15 +246,31 @@ class _JourneyCardState extends State<JourneyCard> {
                               fontSize: 14,
                           )
                       ),
-                      SizedBox(
-                        height: 5,
-                      ),
                       Text(
-                          '@${_userName ?? ''}',
+                          PostFirestore().isOwnPost(widget.post.ownerId) ? 'You' : '@${_userName ?? ''}',
                           style: GoogleFonts.outfit(
                               fontSize: 16,
                               fontWeight: FontWeight.w500
                           )
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                              "Last update: ",
+                              style: GoogleFonts.outfit(
+                                color: specs.black150,
+                                fontSize: 11,
+                              )
+                          ),
+                          Text(
+                              TimeProcessing.formatTimestamp(widget.post.updatedAt),
+                              style: GoogleFonts.outfit(
+                                color: specs.black150,
+                                fontSize: 11,
+                              )
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -335,7 +284,7 @@ class _JourneyCardState extends State<JourneyCard> {
                               fontSize: 14,
                           )
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 5,
                       ),
                       JourneyStatusCard(postStatus: widget.post.status)
@@ -344,15 +293,16 @@ class _JourneyCardState extends State<JourneyCard> {
                 ],
               ),
 
-
-              SizedBox(
-                height: 50,
+              
+              const SizedBox(
+                height: 40,
               ),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   CustomAnimatedButton(
-                    height: 45,
+                    height: 40,
                     width: 100,
                     color: Colors.black,
                     child: Row(
@@ -366,10 +316,10 @@ class _JourneyCardState extends State<JourneyCard> {
                                 fontWeight: FontWeight.w500
                             )
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                         ),
-                        ImageIcon(
+                        const ImageIcon(
                           AssetImage(
                             "assets/icons/setting/qr.png"
                           ),
@@ -379,24 +329,34 @@ class _JourneyCardState extends State<JourneyCard> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 15,
                   ),
                   CustomAnimatedButton(
-                    height: 45,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => OwnerJourneyView(
+                            post: widget.post,
+                          ),
+                        ),
+                      );
+                    },
+                    height: 40,
                     width: specs.screenWidth - 180,
                     child: Text(
                       "Show detail",
                         style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 14,
                           fontWeight: FontWeight.w500
                         )
                     )
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Container(
@@ -404,7 +364,7 @@ class _JourneyCardState extends State<JourneyCard> {
                 height: 20,
                 decoration: BoxDecoration(
                   color: specs.black240,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(100),
                     topLeft: Radius.circular(100),
                   ),

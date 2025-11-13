@@ -6,8 +6,8 @@ import 'package:joy_way/screens/post/post_request_form/components/bottom_request
 import 'package:joy_way/screens/post/post_request_form/pages/end_request_page.dart';
 import 'package:joy_way/screens/post/post_request_form/pages/start_request_page.dart';
 import '../../../models/post/post.dart';
-import '../../../models/request/request_journey/components/end_request_info.dart';
-import '../../../models/request/request_journey/components/start_request_info.dart';
+import '../../../models/request/request_journey/request_join_journey/end_request_info.dart';
+import '../../../models/request/request_journey/request_join_journey/start_request_info.dart';
 import '../../../widgets/animated_container/custom_animated_button.dart';
 import '../edit_post/components/step_bar.dart';
 

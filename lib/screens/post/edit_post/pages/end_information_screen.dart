@@ -12,6 +12,7 @@ import '../../../../widgets/animated_container/custom_animated_button.dart';
 import '../../../../widgets/custom_input/custom_date_picker.dart';
 import '../../../../widgets/custom_input/custom_text_box.dart';
 import '../../../../widgets/map/select_location/select_location.dart';
+import '../../../../widgets/map/view/photo_map_url_view.dart';
 
 
 class EndInformationScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class EndInformationScreen extends StatefulWidget {
 
 class _EndInformationScreenState extends State<EndInformationScreen> {
   late EndInfoBuilder _draft;
+  final _borderRadius = BorderRadius.circular(15);
   @override
   void initState() {
     super.initState();
@@ -53,89 +55,158 @@ class _EndInformationScreenState extends State<EndInformationScreen> {
       padding: EdgeInsets.zero,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+          padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Arrival Information", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 20),
-              // Địa điểm kết thúc
-              CustomTextBox(
-                width: specs.screenWidth - 40,
-                text: _draft.arrivalName,
-                hiddenText: "Place of Arrival",
-                onTap: () async {
-                  Navigator.push(context, CupertinoPageRoute(
-                    builder: (_) => SelectLocation(
-                      onGeoPoint: (v) => setState(() {
-                        _draft.arrivalCoordinate = v;
-                        _emitIfReady();
-                      }),
-                      onAddress: (v) => setState(() {
-                        _draft.arrivalName = v;
-                        _emitIfReady();
-                      }),
+              Text(
+                  "Departure Information",
+                  style: GoogleFonts.outfit(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 10),
+              // Địa điểm xuất phát
+              Container(
+                margin: EdgeInsets.all(5),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    CustomTextBox(
+                      width: specs.screenWidth - 40,
+                      text: _draft.arrivalName,
+                      hiddenText: "Place of departure",
+                      onTap: () async {
+                        Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (_) => SelectLocation(
+                                onGeoPoint: (v) => setState(() {
+                                  _draft.arrivalCoordinate = v;
+                                  _emitIfReady();
+                                }),
+                                onAddress: (v) => setState(() {
+                                  _draft.arrivalName = v;
+                                  _emitIfReady();
+                                }),
+                              ),
+                            ));
+                      },
                     ),
-                  ));
-                },
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomTextBox(
-                    width: specs.screenWidth - 150,
-                    text: TimeProcessing.formattedDepartureTime(_draft.arrivalTime),
-                    hiddenText: "Arrival time",
-                    isRequire: false,
-                    onTap: () async {
-                      Navigator.push(context, CupertinoPageRoute(
-                        builder: (_) => CustomDatePicker(
-                          child: _hint(specs),
-                          date: _draft.arrivalTime,
-                          onDateTimeChanged: (DateTime value) => setState(() {
-                            _draft.arrivalTime = value;
-                            _emitIfReady();
-                          }),
+                    const SizedBox(height: 10),
+
+                    // Thời gian xuất phát
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CustomTextBox(
+                          width: specs.screenWidth - 150,
+                          text: TimeProcessing.formattedDepartureTime(
+                              _draft.arrivalTime),
+                          hiddenText: "Departure time",
+                          isRequire: false,
+                          onTap: () async {
+                            Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => CustomDatePicker(
+                                    child: _hint(specs),
+                                    date: _draft.arrivalTime,
+                                    onDateTimeChanged: (DateTime value) =>
+                                        setState(() {
+                                          _draft.arrivalTime = value;
+                                          _emitIfReady();
+                                        }),
+                                  ),
+                                ));
+                          },
                         ),
-                      ));
-                    },
-                  ),
-                  CustomAnimatedButton(
-                    width: 100, height: 40, pressedScale: 0.9,
-                    borderRadius: BorderRadius.circular(15),
-                    color: specs.turquoise1.withAlpha(150),
-                    shadowColor: Colors.transparent,
-                    child: Center(child: Text("Set Time",
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w500))),
-                    onTap: () {
-                      Navigator.push(context, CupertinoPageRoute(
-                        builder: (_) => CustomDatePicker(
-                          child: _hint(specs),
-                          date: _draft.arrivalTime,
-                          onDateTimeChanged: (DateTime value) => setState(() {
-                            _draft.arrivalTime = value;
-                            _emitIfReady();
-                          }),
+                        CustomAnimatedButton(
+                          width: 80,
+                          height: 40,
+                          pressedScale: 0.9,
+                          borderRadius: _borderRadius,
+                          color: specs.turquoise1.withAlpha(150),
+                          shadowColor: Colors.transparent,
+                          child: Center(
+                              child: Text("Set Time",
+                                  style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500))),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (_) => CustomDatePicker(
+                                    child: _hint(specs),
+                                    date: _draft.arrivalTime,
+                                    onDateTimeChanged: (DateTime value) =>
+                                        setState(() {
+                                          _draft.arrivalTime = value;
+                                          _emitIfReady();
+                                        }),
+                                  ),
+                                ));
+                          },
                         ),
-                      ));
-                    },
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Preview map
+                    PhotoMapUrlView(
+                      borderRadius: 15,
+                      geoPoint: _draft.arrivalCoordinate,
+                      address: _draft.arrivalName ?? "",
+                      width: specs.screenWidth - 40,
+                      height: 160,
+                      mapboxToken: MapboxConfig.accessToken,
+                    ),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 20),
-              Text("Route suggestions", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500)),
+              Text("Route suggestions",
+                  style: GoogleFonts.outfit(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
               if(widget.startInfo != null && widget.endInfo != null)
-                RoutePreviewBox(
-                    start: widget.startInfo!.departureCoordinate,
-                    end: widget.endInfo!.arrivalCoordinate,
-                    accessToken: MapboxConfig.accessToken
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Distance parameters",
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          RoutePreviewBox(
+                            height: 200,
+                              width: specs.screenWidth - 40,
+                              start: widget.startInfo!.departureCoordinate,
+                              end: widget.endInfo!.arrivalCoordinate,
+                              accessToken: MapboxConfig.accessToken
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 )
-
 
             ],
           ),

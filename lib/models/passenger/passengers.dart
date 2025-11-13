@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum PassengerStatus {
-  pending,
-  preparingPickup,
+  pending, // chuẩn bị
+  preparingPickup, // chuẩn bị đón
   pickedUp,
   droppedOff,
   canceledByDriver,
@@ -11,9 +11,9 @@ enum PassengerStatus {
 }
 
 class Passenger {
-  final String id;            // doc id = "${postId}_${userId}"
-  final String postId;        // 🔹 thêm
-  final String userId;        // 🔹 dùng để load profile
+  final String id;
+  final String postId;
+  final String userId;
   final String requestId;
   final PassengerStatus status;
 
@@ -45,8 +45,8 @@ class Passenger {
 
   Map<String, dynamic> toMap() => {
     'id': id,
-    'postId': postId,                // 🔹 ghi ra DB
-    'userId': userId,                // 🔹 ghi ra DB
+    'postId': postId,
+    'userId': userId,
     'requestId': requestId,
     'status': status.name,
     'preparingPickupAt': preparingPickupAt == null ? null : Timestamp.fromDate(preparingPickupAt!),
@@ -67,8 +67,8 @@ class Passenger {
 
     return Passenger(
       id: (m['id'] ?? doc.id) as String,
-      postId: (m['postId'] ?? '') as String,     // 🔹 đọc lại
-      userId: (m['userId'] ?? '') as String,     // 🔹 đọc lại
+      postId: (m['postId'] ?? '') as String,
+      userId: (m['userId'] ?? '') as String,
       requestId: (m['requestId'] ?? '') as String,
       status: st,
       preparingPickupAt: _d(m['preparingPickupAt']),

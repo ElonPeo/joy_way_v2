@@ -7,6 +7,7 @@
       "name": "joy_way",
       "version": "1.0.0+1",
       "dependencies": [
+        "camera",
         "cloud_firestore",
         "connectivity_plus",
         "cupertino_icons",
@@ -21,6 +22,9 @@
         "flutter_svg",
         "geolocator",
         "google_fonts",
+        "google_mlkit_barcode_scanning",
+        "google_mlkit_text_recognition",
+        "image",
         "image_picker",
         "intl",
         "mapbox_maps_flutter",
@@ -75,6 +79,43 @@
       "version": "4.2.5",
       "dependencies": [
         "flutter"
+      ]
+    },
+    {
+      "name": "google_mlkit_barcode_scanning",
+      "version": "0.14.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_text_recognition",
+      "version": "0.15.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "image",
+      "version": "4.5.4",
+      "dependencies": [
+        "archive",
+        "meta",
+        "xml"
+      ]
+    },
+    {
+      "name": "camera",
+      "version": "0.10.6",
+      "dependencies": [
+        "camera_android",
+        "camera_avfoundation",
+        "camera_platform_interface",
+        "camera_web",
+        "flutter",
+        "flutter_plugin_android_lifecycle"
       ]
     },
     {
@@ -469,6 +510,78 @@
       ]
     },
     {
+      "name": "google_mlkit_commons",
+      "version": "0.11.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "xml",
+      "version": "6.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "petitparser"
+      ]
+    },
+    {
+      "name": "archive",
+      "version": "4.0.7",
+      "dependencies": [
+        "crypto",
+        "path",
+        "posix"
+      ]
+    },
+    {
+      "name": "flutter_plugin_android_lifecycle",
+      "version": "2.0.30",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "camera_web",
+      "version": "0.3.5",
+      "dependencies": [
+        "camera_platform_interface",
+        "flutter",
+        "flutter_web_plugins",
+        "stream_transform",
+        "web"
+      ]
+    },
+    {
+      "name": "camera_platform_interface",
+      "version": "2.12.0",
+      "dependencies": [
+        "cross_file",
+        "flutter",
+        "plugin_platform_interface",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "camera_avfoundation",
+      "version": "0.9.21+2",
+      "dependencies": [
+        "camera_platform_interface",
+        "flutter",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "camera_android",
+      "version": "0.10.10+6",
+      "dependencies": [
+        "camera_platform_interface",
+        "flutter",
+        "flutter_plugin_android_lifecycle",
+        "stream_transform"
+      ]
+    },
+    {
       "name": "geolocator_linux",
       "version": "0.2.3",
       "dependencies": [
@@ -542,13 +655,6 @@
         "sweepline_intersections",
         "turf_equality",
         "turf_pip"
-      ]
-    },
-    {
-      "name": "flutter_plugin_android_lifecycle",
-      "version": "2.0.30",
-      "dependencies": [
-        "flutter"
       ]
     },
     {
@@ -868,30 +974,12 @@
       ]
     },
     {
-      "name": "xml",
-      "version": "6.6.1",
-      "dependencies": [
-        "collection",
-        "meta",
-        "petitparser"
-      ]
-    },
-    {
       "name": "universal_io",
       "version": "2.2.2",
       "dependencies": [
         "collection",
         "meta",
         "typed_data"
-      ]
-    },
-    {
-      "name": "image",
-      "version": "4.5.4",
-      "dependencies": [
-        "archive",
-        "meta",
-        "xml"
       ]
     },
     {
@@ -992,6 +1080,36 @@
       "dependencies": []
     },
     {
+      "name": "petitparser",
+      "version": "7.0.1",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
+      "name": "posix",
+      "version": "6.0.3",
+      "dependencies": [
+        "ffi",
+        "meta",
+        "path"
+      ]
+    },
+    {
+      "name": "stream_transform",
+      "version": "2.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "cross_file",
+      "version": "0.3.4+2",
+      "dependencies": [
+        "meta",
+        "web"
+      ]
+    },
+    {
       "name": "package_info_plus",
       "version": "8.3.1",
       "dependencies": [
@@ -1080,14 +1198,6 @@
       ]
     },
     {
-      "name": "cross_file",
-      "version": "0.3.4+2",
-      "dependencies": [
-        "meta",
-        "web"
-      ]
-    },
-    {
       "name": "_flutterfire_internals",
       "version": "1.3.61",
       "dependencies": [
@@ -1161,23 +1271,6 @@
       "name": "ffi",
       "version": "2.1.4",
       "dependencies": []
-    },
-    {
-      "name": "petitparser",
-      "version": "7.0.1",
-      "dependencies": [
-        "collection",
-        "meta"
-      ]
-    },
-    {
-      "name": "archive",
-      "version": "4.0.7",
-      "dependencies": [
-        "crypto",
-        "path",
-        "posix"
-      ]
     },
     {
       "name": "csslib",
@@ -1294,15 +1387,6 @@
       "version": "4.9.0",
       "dependencies": [
         "meta"
-      ]
-    },
-    {
-      "name": "posix",
-      "version": "6.0.3",
-      "dependencies": [
-        "ffi",
-        "meta",
-        "path"
       ]
     },
     {

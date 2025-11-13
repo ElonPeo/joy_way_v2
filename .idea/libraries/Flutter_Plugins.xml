@@ -45,6 +45,13 @@
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/mapbox_maps_flutter-2.11.0" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/path_provider_linux-2.2.1" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/rive_common-0.4.15" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera-0.10.6" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_avfoundation-0.9.21+2" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_web-0.3.5" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_android-0.10.10+6" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.15.0" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_commons-0.11.0" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_barcode_scanning-0.14.1" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

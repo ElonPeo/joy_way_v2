@@ -3,127 +3,176 @@ import '../../../models/passenger/passengers.dart';
 
 class PassengerFirestore {
   final FirebaseFirestore _db;
-  PassengerFirestore({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+  PassengerFirestore({FirebaseFirestore? db})
+      : _db = db ?? FirebaseFirestore.instance;
 
-  Future<void> createPassengerRecord({
+  /// 🔹 Tạo passenger mới — id = `${postId}_${userId}`
+  Future<String?> createPassenger({
     required String postId,
     required String userId,
     required String requestId,
   }) async {
-    final pid = postId.trim(), uid = userId.trim(), rid = requestId.trim();
-    if (pid.isEmpty || uid.isEmpty || rid.isEmpty) {
-      throw Exception('postId/userId/requestId trống');
+    try {
+      final id = '${postId}_$userId';
+      final ref = _db.collection('passengers').doc(id);
+
+      final passenger = Passenger(
+        id: id,
+        postId: postId,
+        userId: userId,
+        requestId: requestId,
+        status: PassengerStatus.pending,
+        createdAt: DateTime.now(),
+        lastUpdatedAt: DateTime.now(),
+      );
+
+      await ref.set(passenger.toMap());
+      return null; // ✅ thành công
+    } catch (e) {
+      print('❌ createPassenger error: $e');
+      return e.toString(); // ❌ lỗi
+    }
+  }
+
+  /// 🔹 Stream danh sách userId của tất cả passengers trong post được truyền vào
+  Stream<List<String>> streamUserIdsByPostId(String postId) async* {
+    if (postId.trim().isEmpty) {
+      yield [];
+      return;
     }
 
-    final docId = '${pid}_$uid';
-    final ref = _db.collection('passengers').doc(docId);
-    final snap = await ref.get();
-
-    if (!snap.exists) {
-      await ref.set({
-        'id': docId,
-        'postId': pid,                 // 🔹 lưu
-        'userId': uid,                 // 🔹 lưu
-        'requestId': rid,
-        'status': PassengerStatus.pending.name,
-        'createdAt': FieldValue.serverTimestamp(),
-        'lastUpdatedAt': FieldValue.serverTimestamp(),
+    try {
+      yield* _db
+          .collection('passengers')
+          .where('postId', isEqualTo: postId)
+          .snapshots()
+          .map((snapshot) {
+        final userIds = snapshot.docs
+            .map((doc) => doc.data()['userId'])
+            .whereType<String>()
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .toList();
+        return userIds;
       });
-    } else {
-      await ref.update({
-        'status': PassengerStatus.pending.name,
-        'lastUpdatedAt': FieldValue.serverTimestamp(),
+    } catch (e) {
+      print('❌ streamUserIdsByPostId error: $e');
+      yield [];
+    }
+  }
+
+  /// 🔹 Lấy danh sách userId của tất cả passengers trong post được truyền vào
+  Future<List<String>> getUserIdsByPostId(String postId) async {
+    if (postId.trim().isEmpty) return [];
+
+    try {
+      final snapshot = await _db
+          .collection('passengers')
+          .where('postId', isEqualTo: postId)
+          .get();
+
+      final userIds = snapshot.docs
+          .map((doc) => doc.data()['userId'])
+          .whereType<String>()
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      return userIds;
+    } catch (e) {
+      print('❌ getUserIdsByPostId error: $e');
+      return [];
+    }
+  }
+
+
+  /// 🔹 Stream toàn bộ danh sách Passenger trong 1 post
+  Stream<List<Passenger>> streamPassengersByPostId({required String postId}) async* {
+    if (postId.trim().isEmpty) {
+      yield [];
+      return;
+    }
+
+    try {
+      yield* _db
+          .collection('passengers')
+          .where('postId', isEqualTo: postId)
+          .orderBy('createdAt', descending: false)
+          .snapshots()
+          .map((snapshot) {
+        final passengers = snapshot.docs.map(Passenger.fromDoc).toList();
+        return passengers;
       });
+    } catch (e) {
+      print('❌ streamPassengersByPostId error: $e');
+      yield [];
     }
   }
 
-  Stream<List<Passenger>> streamByUser({
-    required String userId,
-    List<PassengerStatus>? inStatuses,
-    int? limit,
-  }) {
-    Query<Map<String, dynamic>> q =
-    _db.collection('passengers').where('userId', isEqualTo: userId);
-
-    if (inStatuses != null && inStatuses.isNotEmpty) {
-      q = q.where('status', whereIn: inStatuses.map((e) => e.name).toList());
-    }
-    q = q.orderBy('lastUpdatedAt', descending: true);
-    if (limit != null && limit > 0) q = q.limit(limit);
-
-    return q.snapshots().map((s) => s.docs.map(Passenger.fromDoc).toList());
-  }
-
-  Stream<List<Passenger>> streamByPost({
-    required String postId,
-    List<PassengerStatus>? inStatuses,
-    int? limit,
-  }) {
-    Query<Map<String, dynamic>> q =
-    _db.collection('passengers').where('postId', isEqualTo: postId);
-
-    if (inStatuses != null && inStatuses.isNotEmpty) {
-      q = q.where('status', whereIn: inStatuses.map((e) => e.name).toList());
-    }
-    q = q.orderBy('lastUpdatedAt', descending: true);
-    if (limit != null && limit > 0) q = q.limit(limit);
-
-    return q.snapshots().map((s) => s.docs.map(Passenger.fromDoc).toList());
-  }
-
-
-  Future<void> updatePassengerStatus({
+  /// 🔹 Cập nhật trạng thái passenger theo id
+  Future<String?> updatePassengerStatus({
     required String passengerId,
     required PassengerStatus newStatus,
   }) async {
     try {
       final ref = _db.collection('passengers').doc(passengerId);
-      final snap = await ref.get();
+      final now = DateTime.now();
 
-      if (!snap.exists) {
-        throw Exception('Passenger không tồn tại: $passengerId');
-      }
-
-      final now = FieldValue.serverTimestamp();
-      final updates = <String, dynamic>{
+      final Map<String, dynamic> updateData = {
         'status': newStatus.name,
         'lastUpdatedAt': now,
       };
 
       switch (newStatus) {
         case PassengerStatus.preparingPickup:
-          updates['preparingPickupAt'] = now;
+          updateData['preparingPickupAt'] = now;
           break;
         case PassengerStatus.pickedUp:
-          updates['pickedUpAt'] = now;
+          updateData['pickedUpAt'] = now;
           break;
         case PassengerStatus.droppedOff:
-          updates['droppedOffAt'] = now;
+          updateData['droppedOffAt'] = now;
           break;
         case PassengerStatus.canceledByDriver:
-          updates['canceledByDriverAt'] = now;
+          updateData['canceledByDriverAt'] = now;
           break;
         case PassengerStatus.canceledByPassenger:
-          updates['canceledByPassengerAt'] = now;
+          updateData['canceledByPassengerAt'] = now;
           break;
         case PassengerStatus.noShow:
-          updates['noShowAt'] = now;
+          updateData['noShowAt'] = now;
           break;
-        case PassengerStatus.pending:
+        default:
           break;
       }
 
-      await ref.update(updates);
-      print('✅ Cập nhật thành công: $passengerId → ${newStatus.name}');
-    } catch (e, st) {
-      print('❌ Lỗi khi cập nhật Passenger [$passengerId]: $e');
-      print(st);
-      rethrow; // hoặc throw Exception('Lỗi cập nhật Passenger');
+      await ref.update(updateData);
+      return null; // ✅ thành công
+    } catch (e) {
+      print('❌ updatePassengerStatus error: $e');
+      return e.toString(); // ❌ lỗi
     }
   }
 
 
+  Future<List<String>> getPassengerIdsByPostId(String postId) async {
+    if (postId.trim().isEmpty) return [];
 
+    try {
+      final snap = await _db
+          .collection('passengers')
+          .where('postId', isEqualTo: postId)
+          .get();
+
+      // Lấy danh sách id của tài liệu (document ID)
+      final ids = snap.docs.map((d) => d.id).toList();
+
+      return ids;
+    } catch (e) {
+      print('❌ getPassengerIdsByPostId error: $e');
+      return [];
+    }
+  }
 
 
 }

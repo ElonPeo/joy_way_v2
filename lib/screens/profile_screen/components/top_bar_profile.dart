@@ -7,6 +7,7 @@ import 'package:joy_way/services/firebase_services/profile_services/user_activit
 import 'package:joy_way/widgets/animated_container/loading_container.dart';
 
 import '../../../../widgets/animated_container/custom_animated_button.dart';
+import '../../../services/firebase_services/request_services/make_friend_firestore.dart';
 import '../../message_screen/message_room_screen.dart';
 import '../../setting/edit_profile/edit_profile.dart';
 import '../../setting/setting_and_privacy.dart';
@@ -75,27 +76,53 @@ class _TopBarProfileState extends State<TopBarProfile> {
 
 
 
-  Future<void> _toggleFollow() async {
+  Future<void> _toggleFollowAndMakeFriend() async {
     if (_busy || _myUid == null || _myUid == widget.userId) return;
     setState(() => _busy = true);
+
     try {
+      final List<Future> tasks = [];
+
+      // follow / unfollow
       if (_isFollowed) {
-        await UserActivityServices.I.unfollow(
+        tasks.add(UserActivityServices.I.unfollow(
           myUid: _myUid!,
           targetUid: widget.userId,
-        );
+        ));
       } else {
-        await UserActivityServices.I.follow(
+        tasks.add(UserActivityServices.I.follow(
           myUid: _myUid!,
           targetUid: widget.userId,
-        );
+        ));
       }
+
+      // gửi lời mời kết bạn
+      tasks.add(
+        MakeFriendFirestore().createRequest(
+          senderId: _myUid!,
+          receiverId: widget.userId,
+        ),
+      );
+
+      // chạy cả 2 cùng lúc
+      final results = await Future.wait(tasks);
+
+      // check lỗi từ createRequest
+      final mfError = results.last;
+      if (mfError != null) {
+        debugPrint("MakeFriend error: $mfError");
+      }
+
       if (!mounted) return;
       setState(() => _isFollowed = !_isFollowed);
+
+    } catch (e) {
+      debugPrint("ERR: $e");
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +236,7 @@ class _TopBarProfileState extends State<TopBarProfile> {
                   children: [
                     _ready ?
                     CustomAnimatedButton(
-                      onTap: _toggleFollow,
+                      onTap: _toggleFollowAndMakeFriend,
                       height: 35,
                       width: 110,
                       color: _isFollowed

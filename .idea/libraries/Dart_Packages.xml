@@ -51,6 +51,41 @@
             </list>
           </value>
         </entry>
+        <entry key="camera">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera-0.10.6/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="camera_android">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_android-0.10.10+6/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="camera_avfoundation">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_avfoundation-0.9.21+2/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="camera_platform_interface">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_platform_interface-2.12.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="camera_web">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_web-0.3.5/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="characters">
           <value>
             <list>
@@ -450,6 +485,27 @@
             </list>
           </value>
         </entry>
+        <entry key="google_mlkit_barcode_scanning">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_barcode_scanning-0.14.1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="google_mlkit_commons">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_commons-0.11.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="google_mlkit_text_recognition">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.15.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="graphs">
           <value>
             <list>
@@ -807,6 +863,13 @@
             </list>
           </value>
         </entry>
+        <entry key="stream_transform">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../pub-cache/hosted/pub.dev/stream_transform-2.1.1/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="string_scanner">
           <value>
             <list>
@@ -996,6 +1059,11 @@
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/async-2.13.0/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/benchmark-0.3.0/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/boolean_selector-2.1.2/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera-0.10.6/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_android-0.10.10+6/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_avfoundation-0.9.21+2/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_platform_interface-2.12.0/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/camera_web-0.3.5/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/characters-1.4.0/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/clock-1.1.2/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/cloud_firestore-6.0.1/lib" />
@@ -1050,6 +1118,9 @@
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/geolocator_windows-0.2.5/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/geotypes-0.0.2/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_fonts-6.3.1/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_barcode_scanning-0.14.1/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_commons-0.11.0/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.15.0/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/graphs-2.3.2/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/gsettings-0.2.8/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/html-0.15.6/lib" />
@@ -1100,6 +1171,7 @@
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/sprintf-7.0.0/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/stack_trace-1.12.1/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/stream_channel-2.1.4/lib" />
+      <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/stream_transform-2.1.1/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/string_scanner-1.4.1/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/sweepline_intersections-0.0.4/lib" />
       <root url="file://$PROJECT_DIR$/../pub-cache/hosted/pub.dev/term_glyph-1.2.2/lib" />

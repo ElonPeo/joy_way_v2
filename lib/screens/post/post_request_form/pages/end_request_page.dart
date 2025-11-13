@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../config/general_specifications.dart';
-import '../../../../models/request/request_journey/components/end_request_info.dart';
+import '../../../../models/request/request_journey/request_join_journey/end_request_info.dart';
 import '../../../../services/data_processing/time_processing.dart';
 import '../../../../widgets/animated_container/custom_animated_button.dart';
 import '../../../../widgets/custom_input/custom_date_picker.dart';

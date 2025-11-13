@@ -53,7 +53,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final specs = GeneralSpecifications(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
+      backgroundColor: specs.backgroundColor,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [

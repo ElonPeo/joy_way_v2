@@ -19,7 +19,7 @@ class BottomBar extends StatefulWidget {
   State<BottomBar> createState() => _BottomBarState();
 }
 
-class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
+class _BottomBarState extends State<BottomBar> {
   late int _animIndex;
   late int _oldAnimIndex;
 
@@ -38,163 +38,134 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
     'Profile'
   ];
 
-  final List<GlobalKey> _itemKeys = List.generate(5, (_) => GlobalKey());
-  final List<double> _itemLeft = List.filled(5, 20);
+  @override
+  void initState() {
+    super.initState();
+    _animIndex = widget.page;
+    _oldAnimIndex = widget.page;
+  }
 
   @override
   void didUpdateWidget(covariant BottomBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.page != widget.page) {
+      _oldAnimIndex = _animIndex;
       _animIndex = widget.page;
-      _oldAnimIndex = oldWidget.page;
-    }
-  }
-
-  void initState() {
-    super.initState();
-    _animIndex = widget.page;
-    _oldAnimIndex = widget.page;
-    WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _captureItemPositions());
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeMetrics() {
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _captureItemPositions());
-  }
-
-  void _captureItemPositions() {
-    for (int i = 0; i < 5; i++) {
-      final ctx = _itemKeys[i].currentContext;
-      final render = ctx?.findRenderObject() as RenderBox?;
-      if (render != null) {
-        final topLeft = render.localToGlobal(Offset.zero);
-        final left = topLeft.dx;
-        if (_itemLeft[i] != left) {
-          _itemLeft[i] = left;
-        }
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final specs = GeneralSpecifications(context);
-    return SizedBox(
-      height: 100,
-      width: specs.screenWidth,
-      child: Stack(
-        children: [
-          AnimatedPositioned(
-              duration: const Duration(milliseconds: 700),
-              curve: Curves.easeOutCirc,
-              left: _itemLeft[_animIndex],
-              bottom: 37,
-              child: Container(
-                height: 55,
-                width: 55,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(
-                    width: 0.8,
-                    color: specs.black240
-                  )
-                ),
-                child: Center(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    switchInCurve: Curves.easeOutBack,
-                    switchOutCurve: Curves.easeIn,
-                    transitionBuilder: (child, anim) {
-                      final forward = _animIndex > _oldAnimIndex; // hướng
-                      final slide = Tween<Offset>(
-                        begin: forward
-                            ? const Offset(0, .35)
-                            : const Offset(0, -.35),
-                        end: Offset.zero,
-                      ).animate(anim);
-                      final scale =
-                          Tween<double>(begin: .85, end: 1).animate(anim);
 
-                      return FadeTransition(
-                        opacity: anim,
-                        child: SlideTransition(
-                          position: slide,
-                          child: ScaleTransition(scale: scale, child: child),
-                        ),
-                      );
-                    },
-                    child: _DotIcon(
-                      key: ValueKey(_animIndex),
-                      // bắt buộc để switcher nhận thay đổi
-                      asset: _iconAssets[_animIndex], // icon theo page hiện tại
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double width = constraints.maxWidth;
+        const double circleSize = 55.0;
+        const double horizontalPadding = 20.0;
+        final double itemWidth = width / 5;
+        final double itemCenterX = itemWidth * _animIndex + itemWidth / 2;
+        final double circleLeft = itemCenterX - circleSize / 2;
+        final double concaveStart = circleLeft - horizontalPadding + 0.5;
+
+        return SizedBox(
+          height: 100,
+          width: width,
+          child: Stack(
+            children: [
+              // Vòng tròn nhô lên
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 700),
+                curve: Curves.easeOutCirc,
+                left: circleLeft,
+                bottom: 37,
+                child: Container(
+                  height: circleSize,
+                  width: circleSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(
+                      width: 0.8,
+                      color: specs.black240,
+                    ),
+                  ),
+                  child: Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOutBack,
+                      switchOutCurve: Curves.easeIn,
+                      transitionBuilder: (child, anim) {
+                        final forward = _animIndex > _oldAnimIndex;
+                        final slide = Tween<Offset>(
+                          begin:
+                          forward ? const Offset(0, .35) : const Offset(0, -.35),
+                          end: Offset.zero,
+                        ).animate(anim);
+                        final scale =
+                        Tween<double>(begin: .85, end: 1).animate(anim);
+
+                        return FadeTransition(
+                          opacity: anim,
+                          child: SlideTransition(
+                            position: slide,
+                            child: ScaleTransition(
+                              scale: scale,
+                              child: child,
+                            ),
+                          ),
+                        );
+                      },
+                      child: _DotIcon(
+                        key: ValueKey(_animIndex),
+                        asset: _iconAssets[_animIndex],
+                      ),
                     ),
                   ),
                 ),
-              )),
-          Positioned(
-            bottom: 0,
-            child: SizedBox(
-              height: BottomBar.kHeight,
-              width: MediaQuery.of(context).size.width,
-              child: LayoutBuilder(
-                builder: (context, c) {
-                  const borderRadius = 10.0;
-                  const radius = 30.0;
-                  const yOffset = 13.0;
-                  const smooth = 4.0;
-                  const gradientOfSmooth = 4.0;
-                  const left = borderRadius;
-                  final right = c.maxWidth - borderRadius;
-                  const concaveWidth = smooth +
-                      gradientOfSmooth +
-                      2 * radius +
-                      gradientOfSmooth +
-                      smooth;
-                  final maxStart =
-                      (right - left - concaveWidth).clamp(0.0, double.infinity);
-                  return TweenAnimationBuilder<double>(
+              ),
+
+              // Nền bottom bar + concave moving
+              Positioned(
+                bottom: 0,
+                child: SizedBox(
+                  height: BottomBar.kHeight,
+                  width: width,
+                  child: TweenAnimationBuilder<double>(
                     duration: const Duration(milliseconds: 700),
-                    tween: Tween(begin: 0, end: _itemLeft[_animIndex] - 20.5),
+                    tween: Tween<double>(
+                      begin: 0,
+                      end: concaveStart,
+                    ),
                     curve: Curves.easeOutCirc,
                     builder: (context, value, _) {
                       return CustomPaint(
-                        size: Size(c.maxWidth, BottomBar.kHeight),
+                        size: Size(width, BottomBar.kHeight),
                         painter: AppBarPainter(
                           anim: AlwaysStoppedAnimation(value),
-                          borderRadius: borderRadius,
-                          radius: radius,
-                          yOffset: yOffset,
-                          smooth: smooth,
-                          gradientOfSmooth: gradientOfSmooth,
+                          borderRadius: 10.0,
+                          radius: 30.0,
+                          yOffset: 13.0,
+                          smooth: 4.0,
+                          gradientOfSmooth: 4.0,
                         ),
                       );
                     },
-                  );
-                },
+                  ),
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                height: BottomBar.kHeight,
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(5, (index) {
-                    return Builder(
-                      builder: (itemContext) => GestureDetector(
+
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  height: BottomBar.kHeight,
+                  width: width,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(5, (index) {
+                      return GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTapDown: (details) {
                           _oldAnimIndex = _animIndex;
@@ -202,10 +173,8 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                           setState(() => _animIndex = index);
                         },
                         child: SizedBox(
-                          key: _itemKeys[index],
                           height: 80,
                           width: 55,
-                          // color: Colors.green.withOpacity(0.2),
                           child: Stack(
                             children: [
                               AnimatedPositioned(
@@ -213,10 +182,11 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                                 left: 16.5,
                                 top: _animIndex == index ? 0 : 19,
                                 child: AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 200),
+                                  duration:
+                                  const Duration(milliseconds: 200),
                                   opacity: _animIndex == index ? 0 : 1,
                                   child: ImageIcon(
-                                    AssetImage("${_iconAssets[index]}"),
+                                    AssetImage(_iconAssets[index]),
                                     size: 22,
                                     color: _animIndex == index
                                         ? specs.pantoneColor4
@@ -229,7 +199,8 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                                 child: SizedBox(
                                   width: 55,
                                   child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 200),
+                                    duration:
+                                    const Duration(milliseconds: 200),
                                     opacity: _animIndex == index ? 1 : 0,
                                     child: Text(
                                       _titlePage[index],
@@ -242,17 +213,19 @@ class _BottomBarState extends State<BottomBar> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    );
-                  }),
-                )),
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -282,7 +255,7 @@ class AppBarPainter extends CustomPainter {
     final double left = borderRadius;
     final double right = size.width - borderRadius;
 
-    final double startConcave = anim.value; // <<< dùng giá trị đang animate
+    final double startConcave = anim.value;
 
     path.moveTo(left, 0);
 
@@ -299,7 +272,7 @@ class AppBarPainter extends CustomPainter {
       yOffset,
     );
 
-    // 3) cung tròn (ví dụ chord ~ 2*radius)
+    // 3) cung tròn
     final ex = sx + gradientOfSmooth + 2 * radius;
     path.arcToPoint(
       Offset(ex, yOffset),
@@ -319,7 +292,7 @@ class AppBarPainter extends CustomPainter {
     // 5) cạnh trên còn lại
     path.lineTo(right, 0);
 
-    // 6) các cạnh & bo góc
+    // 6) bo 4 góc còn lại
     path.quadraticBezierTo(size.width, 0, size.width, borderRadius);
     path.lineTo(size.width, size.height - borderRadius);
     path.quadraticBezierTo(size.width, size.height, right, size.height);
@@ -351,8 +324,11 @@ class _DotIcon extends StatelessWidget {
     return SizedBox(
       width: 25,
       height: 25,
-      child: ImageIcon(AssetImage(asset),
-          size: 25, color: Colors.black),
+      child: ImageIcon(
+        AssetImage(asset),
+        size: 25,
+        color: Colors.black,
+      ),
     );
   }
 }

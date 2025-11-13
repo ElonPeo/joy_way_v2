@@ -65,6 +65,12 @@ class TimeProcessing {
       return {'time': '', 'date': ''};
     }
   }
+
+  static String? formattedDepartureTime3(DateTime? dateTime) {
+    if (dateTime == null) return null;
+    return DateFormat('MMMM dd, yyyy   HH:mm').format(dateTime);
+  }
+
   /// Gộp ngày và giờ (dùng khi người dùng chọn riêng ngày + giờ)
   static DateTime combineDateAndTime(DateTime date, DateTime time) {
     return DateTime(

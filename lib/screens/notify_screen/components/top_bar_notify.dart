@@ -111,13 +111,13 @@ class _TopBarNotifyState extends State<TopBarNotify> {
                     widget.onPageChanged(0);
                   },
                   height: 40,
-                  width: 45,
+                  width: 80,
                   borderRadius: BorderRadius.circular(100),
                   color: _page == 0 ?  specs.pantoneColor4 : specs.black240,
                   flashingColor: specs.pantoneColor,
                   child: Center(
                     child: Text(
-                      "All",
+                      "Request",
                       style: GoogleFonts.outfit(
                           color: _page == 0 ?  Colors.white : specs.black150,
                           fontSize: 14,
@@ -137,41 +137,15 @@ class _TopBarNotifyState extends State<TopBarNotify> {
                     widget.onPageChanged(1);
                   },
                   height: 40,
-                  width: 60,
+                  width: 70,
                   borderRadius: BorderRadius.circular(100),
                   color: _page == 1 ?  specs.pantoneColor4 : specs.black240,
                   flashingColor: specs.pantoneColor,
                   child: Center(
                     child: Text(
-                      "Post",
+                      "Notify",
                       style: GoogleFonts.outfit(
                           color: _page == 1 ?  Colors.white : specs.black150,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                FlashingContainer(
-                  onTap: () {
-                    setState(() {
-                      _page = 2;
-                    });
-                    widget.onPageChanged(2);
-                  },
-                  height: 40,
-                  width: 80,
-                  borderRadius: BorderRadius.circular(100),
-                  color: _page == 2 ?  specs.pantoneColor4 : specs.black240,
-                  flashingColor: specs.pantoneColor,
-                  child: Center(
-                    child: Text(
-                      "Journey",
-                      style: GoogleFonts.outfit(
-                          color: _page == 2 ?  Colors.white : specs.black150,
                           fontSize: 14,
                           fontWeight: FontWeight.w500
                       ),

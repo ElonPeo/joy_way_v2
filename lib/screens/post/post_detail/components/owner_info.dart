@@ -25,6 +25,10 @@ class _OwnerInfoState extends State<OwnerInfo> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              width: 0.8,
+              color: specs.black240
+          )
       ),
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -43,7 +47,7 @@ class _OwnerInfoState extends State<OwnerInfo> {
               Column(
                 children: [
                   SizedBox(
-                    width: specs.screenWidth - 145,
+                    width: specs.screenWidth - 150,
                     child: Text(
                         widget.ownerInfo.name ?? "No name",
                       style: GoogleFonts.roboto(
@@ -53,7 +57,7 @@ class _OwnerInfoState extends State<OwnerInfo> {
                     ),
                   ),
                   SizedBox(
-                    width: specs.screenWidth - 145,
+                    width: specs.screenWidth - 150,
                     child: Text(
                         "@${widget.ownerInfo.userName}",
                         style: GoogleFonts.outfit(

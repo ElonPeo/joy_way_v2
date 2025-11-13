@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:joy_way/screens/setting/verify/verify.dart';
+import 'package:joy_way/screens/setting/verify/verify_screen.dart';
 import 'package:joy_way/services/firebase_services/authentication.dart';
 import 'package:joy_way/widgets/custom_scaffold/custom_scaffold.dart';
 
@@ -54,7 +56,10 @@ class _SettingAndPrivacyState extends State<SettingAndPrivacy> {
                 title: "Verify identity",
                 assetIcon: "assets/icons/setting/id-badge.png",
                 onTap: () {
-
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => VerifyScreen()),
+                  );
                 },
               ),
               SettingTile(

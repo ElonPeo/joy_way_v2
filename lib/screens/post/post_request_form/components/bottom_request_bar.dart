@@ -1,12 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:joy_way/models/request/request_journey/components/end_request_info.dart';
-import 'package:joy_way/models/request/request_journey/components/start_request_info.dart';
-import 'package:joy_way/models/request/request_journey/request_journey.dart';
 import 'package:joy_way/services/firebase_services/request_services/request_firestore.dart';
 import 'package:joy_way/widgets/custom_input/confirm_button.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../../../config/general_specifications.dart';
 import '../../../../models/post/post.dart';
+import '../../../../models/request/request_journey/request_join_journey/end_request_info.dart';
+import '../../../../models/request/request_journey/request_join_journey/request_join_journey.dart';
+import '../../../../models/request/request_journey/request_join_journey/start_request_info.dart';
+import '../../../../services/firebase_services/request_services/request_journey_services/request_join_journey_services.dart';
 import '../../../../widgets/notifications/show_notification.dart';
 
 class BottomRequestBar extends StatefulWidget {
@@ -71,7 +73,7 @@ class _BottomRequestBarState extends State<BottomRequestBar> {
             ShowNotification.showAnimatedSnackBar(
               context,
               result,
-              1,
+              0,
               const Duration(milliseconds: 200),
             );
           }
@@ -102,7 +104,7 @@ class _BottomRequestBarState extends State<BottomRequestBar> {
             ShowNotification.showAnimatedSnackBar(
               context,
               result,
-              1,
+              0,
               const Duration(milliseconds: 200),
             );
           }
@@ -119,54 +121,43 @@ class _BottomRequestBarState extends State<BottomRequestBar> {
         isConfirmOnly: false,
         onConfirm: () async {
           FocusScope.of(context).unfocus();
-          try {
-            final start = widget.startRequestInfo;
-            final end = widget.endRequestInfo;
-            if (start == null || end == null ) {
-              ShowNotification.showAnimatedSnackBar(
-                context,
-                "Please complete all required sections before confirming.",
-                2,
-                const Duration(milliseconds: 300),
-              );
-              return;
-            }
-            // Map sang Post phẳng
-            final request = RequestJourney(
-              journeyId: widget.post.id,
-              desiredPickUpTime: widget.startRequestInfo?.desiredPickUpTime,
-              desiredDropOffTime: widget.endRequestInfo?.desiredDropOffTime,
-              pickUpName: widget.startRequestInfo?.pickUpName,
-              pickUpPoint: widget.startRequestInfo?.pickUpPoint,
-              dropOffName: widget.endRequestInfo?.dropOffName,
-              dropOffPoint: widget.endRequestInfo?.dropOffPoint,
-              message: '',
-              note: '',
-            );
+          final userId = FirebaseAuth.instance.currentUser?.uid;
+          if (userId == null) {
+            ShowNotification.showAnimatedSnackBar(context, "You are not logged in", 1, const Duration(milliseconds: 200),);
+            return;
+          }
+          final start = widget.startRequestInfo;
+          final end   = widget.endRequestInfo;
+          if (start == null || end == null) {
+            ShowNotification.showAnimatedSnackBar(context, "Missing pick-up/drop-off point data", 1, const Duration(milliseconds: 200),);
+            return;
+          }
+          final req = RequestJoinJourney(
+            id: '',
+            senderId: userId,
+            receiverId: widget.post.ownerId,
+            postId: widget.post.id,
+            desiredPickUpTime: start.desiredPickUpTime,
+            desiredDropOffTime: end.desiredDropOffTime,
+            pickUpName: start.pickUpName,
+            pickUpPoint: start.pickUpPoint,
+            dropOffName: end.dropOffName,
+            dropOffPoint: end.dropOffPoint,
+            note: "",
+            isAccepted: null,
+            createdAt: null,
+            updatedAt: null,
+          );
 
-            final postService = RequestFirestore();
-            final postId = await postService.createJourneyRequest(
-              receiverId: widget.post.ownerId,
-              requestJourney: request,
-            );
-
-            ShowNotification.showAnimatedSnackBar(
-              context,
-              "Post created successfully (ID: $postId)",
-              3,
-              const Duration(milliseconds: 400),
-            );
-            Navigator.pop(context);
-          } catch (e) {
-            ShowNotification.showAnimatedSnackBar(
-              context,
-              e.toString(),
-              0,
-              const Duration(milliseconds: 400),
-            );
+          final service = RequestJoinJourneyServices();
+          final err = await service.createRequest(req);
+          if (err == null) {
+            ShowNotification.showAnimatedSnackBar(context, "Request to join the journey successfully sent.", 3, const Duration(milliseconds: 200),);
+            if (mounted) Navigator.of(context).maybePop();
+          } else {
+            ShowNotification.showAnimatedSnackBar(context, "Err: $err", 0, const Duration(milliseconds: 200),);
           }
         },
-        confirmTitle: "Confirm",
         onRefuse: () {
           _goPrev();
         },
@@ -177,57 +168,48 @@ class _BottomRequestBarState extends State<BottomRequestBar> {
       isConfirmOnly: false,
       onConfirm: () async {
         FocusScope.of(context).unfocus();
-        try {
-          final start = widget.startRequestInfo;
-          final end = widget.endRequestInfo;
-          if (start == null || end == null ) {
-            ShowNotification.showAnimatedSnackBar(
-              context,
-              "Please complete all required sections before confirming.",
-              2,
-              const Duration(milliseconds: 300),
-            );
-            return;
-          }
-          // Map sang Post phẳng
-          final request = RequestJourney(
-            journeyId: widget.post.id,
-            desiredPickUpTime: widget.startRequestInfo?.desiredPickUpTime,
-            desiredDropOffTime: widget.endRequestInfo?.desiredDropOffTime,
-            pickUpName: widget.startRequestInfo?.pickUpName,
-            pickUpPoint: widget.startRequestInfo?.pickUpPoint,
-            dropOffName: widget.endRequestInfo?.dropOffName,
-            dropOffPoint: widget.endRequestInfo?.dropOffPoint,
-            message: '',
-            note: '',
-          );
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId == null) {
+          ShowNotification.showAnimatedSnackBar(context, "You are not logged in", 1, const Duration(milliseconds: 200),);
+          return;
+        }
+        final start = widget.startRequestInfo;
+        final end   = widget.endRequestInfo;
+        if (start == null || end == null) {
+          ShowNotification.showAnimatedSnackBar(context, "Missing pick-up/drop-off point data", 1, const Duration(milliseconds: 200),);
+          return;
+        }
+        final req = RequestJoinJourney(
+          id: '',
+          senderId: userId,
+          receiverId: widget.post.ownerId,
+          postId: widget.post.id,
+          desiredPickUpTime: start.desiredPickUpTime,
+          desiredDropOffTime: end.desiredDropOffTime,
+          pickUpName: start.pickUpName,
+          pickUpPoint: start.pickUpPoint,
+          dropOffName: end.dropOffName,
+          dropOffPoint: end.dropOffPoint,
+          note: "",
+          isAccepted: null,
+          createdAt: null,
+          updatedAt: null,
+        );
 
-          final postService = RequestFirestore();
-          final postId = await postService.createJourneyRequest(
-              receiverId: widget.post.ownerId,
-              requestJourney: request,
-          );
-
-          ShowNotification.showAnimatedSnackBar(
-            context,
-            "Post created successfully (ID: $postId)",
-            3,
-            const Duration(milliseconds: 400),
-          );
-          Navigator.pop(context);
-        } catch (e) {
-          ShowNotification.showAnimatedSnackBar(
-            context,
-            e.toString(),
-            0,
-            const Duration(milliseconds: 400),
-          );
+        final service = RequestJoinJourneyServices();
+        final err = await service.createRequest(req);
+        if (err == null) {
+          ShowNotification.showAnimatedSnackBar(context, "Request to join the journey successfully sent.", 3, const Duration(milliseconds: 200),);
+          if (mounted) Navigator.of(context).maybePop();
+        } else {
+          ShowNotification.showAnimatedSnackBar(context, "Err: $err", 0, const Duration(milliseconds: 200),);
         }
       },
       onRefuse: () {
         _goPrev();
       },
     );
+
   }
 
   @override

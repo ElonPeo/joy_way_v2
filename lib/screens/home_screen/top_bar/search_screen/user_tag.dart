@@ -139,19 +139,6 @@ class _UserTagState extends State<UserTag> {
                         fontSize: 12,
                       ),
                     ),
-                    if (_err != null && _err != 'Permission denied')
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          _err!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(
-                            color: Colors.red,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),

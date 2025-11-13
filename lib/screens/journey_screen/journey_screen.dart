@@ -73,7 +73,7 @@ class JourneyScreen extends StatelessWidget {
                 children: [
                   JourneyScreens(),
                   JourneyRequirements(),
-                  JourneyRequirements(),
+                  JourneyScreens(),
                 ],
               ),
             ),

@@ -4,7 +4,9 @@ import 'package:joy_way/models/post/components/detail.dart';
 import 'package:joy_way/models/post/components/end_infor.dart';
 import 'package:joy_way/models/post/components/start_info.dart';
 import 'package:joy_way/models/post/post.dart';
+import 'package:joy_way/services/firebase_services/passenger_services/passenger_firestore.dart';
 
+import '../../../models/passenger/passengers.dart';
 import '../../../models/post/post_display.dart';
 import '../profile_services/profile_firestore.dart';
 
@@ -118,7 +120,6 @@ class PostFirestore {
     if (p.arrivalCoordinate.latitude == 0 && p.arrivalCoordinate.longitude == 0) {
       return "Invalid arrival coordinate.";
     }
-
     // thời gian
     final now = DateTime.now();
     const grace = Duration(minutes: 1);
@@ -197,32 +198,168 @@ class PostFirestore {
     }
   }
 
+  /// Lấy tất cả postID của user chuẩn bị và đang tham gia hành trình.
+  Future<List<String>> getActivePostIdsByPassengers(String userId) async {
+    if (userId.trim().isEmpty) return [];
 
-  Future<List<Post>> getPostsByOwnerId(String ownerId) async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .where('ownerId', isEqualTo: ownerId)
-        .orderBy('createdAt', descending: true)
-        .get();
+    try {
+      final allowedStatuses = [
+        PassengerStatus.pending.name,
+        PassengerStatus.preparingPickup.name,
+        PassengerStatus.pickedUp.name,
+      ];
 
-    return snapshot.docs.map((doc) => Post.fromDoc(doc)).toList();
+      // 🔹 Truy vấn danh sách passenger hợp lệ
+      final snapshot = await _db
+          .collection('passengers')
+          .where('userId', isEqualTo: userId)
+          .where('status', whereIn: allowedStatuses)
+          .get();
+
+      if (snapshot.docs.isEmpty) return [];
+
+      // 🔹 Lấy danh sách postId (lọc null, rỗng, loại trùng)
+      final postIds = snapshot.docs
+          .map((doc) => doc.data()['postId'])
+          .whereType<String>()
+          .where((id) => id.trim().isNotEmpty)
+          .toSet()
+          .toList();
+
+      return postIds;
+    } catch (e) {
+      print('❌ getActivePostIdsByPassengers error: $e');
+      return [];
+    }
   }
 
-  Future<Post?> getLatestPostOfCurrentUser() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw Exception("Chưa đăng nhập.");
+  /// Lấy tất ca các post mà user sở hữu
+  /// Lấy tất cả post đang "active" mà user sở hữu
+  Future<List<String>> getActivePostIdsByPosts(String ownerId) async {
+    if (ownerId.trim().isEmpty) return [];
+    try {
+      final allowedStatuses = [
+        PostStatus.findingCompanion.name,
+        PostStatus.prepareToDepart.name,
+        PostStatus.hasDeparted.name,
+        PostStatus.isTravelingWithCompanions.name,
+      ];
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .where('ownerId', isEqualTo: user.uid)
-        .orderBy('createdAt', descending: true)
-        .limit(1)
-        .get();
+      final snap = await _db
+          .collection('posts')
+          .where('ownerId', isEqualTo: ownerId)
+          .where('status', whereIn: allowedStatuses)
+          .orderBy('createdAt', descending: true)
+          .get();
 
-    if (snapshot.docs.isEmpty) return null;
+      final ids = snap.docs
+          .map((d) => d.id)
+          .where((id) => id.isNotEmpty)
+          .toList();
 
-    return Post.fromDoc(snapshot.docs.first);
+      return ids;
+    } catch (e) {
+      // log nhẹ, không crash
+      print('getActivePostIdsByPosts error: $e');
+      return [];
+    }
   }
+
+  /// Lấy tất cả các Post với postID đuợc truyền vào
+  /// Lấy toàn bộ Post theo danh sách postId (chunk 10, chạy song song)
+  Future<List<Post>> getPostsByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+
+    try {
+      // bỏ trùng & rỗng
+      final uniqueIds = ids
+          .where((id) => id.trim().isNotEmpty)
+          .toSet()
+          .toList();
+
+      // chia chunk 10 id (giới hạn whereIn)
+      final futures = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
+      for (var i = 0; i < uniqueIds.length; i += 10) {
+        final chunk = uniqueIds.sublist(i, i + 10 > uniqueIds.length ? uniqueIds.length : i + 10);
+        futures.add(
+          _db
+              .collection('posts')
+              .where(FieldPath.documentId, whereIn: chunk)
+              .get(),
+        );
+      }
+
+      final results = await Future.wait(futures);
+
+      final posts = <Post>[];
+      for (final snap in results) {
+        posts.addAll(snap.docs.map(Post.fromDoc));
+      }
+
+      // sort theo updatedAt desc, fallback createdAt, rồi 0
+      posts.sort((a, b) {
+        final ba = b.updatedAt ?? b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final aa = a.updatedAt ?? a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return ba.compareTo(aa);
+      });
+
+      return posts;
+    } catch (e) {
+      print('getPostsByIds error: $e');
+      return [];
+    }
+  }
+
+
+  /// Lấy tất cả các post active của user hiện tại
+  Future<({List<Post>? posts, String? error})> getActivePostsOfCurrentUser() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return (posts: null, error: 'You are not logged in');
+      }
+      final uid = user.uid;
+      // 🔹 1) Lấy tất cả postId user đang tham gia + postId user sở hữu
+      final passengerIds = await getActivePostIdsByPassengers(uid);
+      final ownerIds = await getActivePostIdsByPosts(uid);
+      // 🔹 2) Gộp và loại trùng
+      final allIds = {...passengerIds, ...ownerIds}.toList();
+      if (allIds.isEmpty) {
+        return (posts: null, error: 'Try join a journey or create your own!');
+      }
+      // 🔹 3) Lấy toàn bộ post tương ứng
+      final posts = await getPostsByIds(allIds);
+      // 🔹 4) Sort theo updatedAt mới nhất
+      posts.sort((a, b) => (b.updatedAt ?? DateTime(0)).compareTo(a.updatedAt ?? DateTime(0)));
+      return (posts: posts, error: null);
+    } catch (e) {
+      return (posts: null, error: e.toString());
+    }
+  }
+
+
+  Future<bool> updatePostStatus({
+    required String postId,
+    required PostStatus newStatus,
+  }) async {
+    if (postId.trim().isEmpty) return false;
+
+    try {
+      final ref = _db.collection('posts').doc(postId);
+      await ref.update({
+        'status': newStatus.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      print('✅ Post $postId updated to ${newStatus.name}');
+      return true;
+    } catch (e) {
+      print('❌ updatePostStatus error: $e');
+      return false;
+    }
+  }
+
+
+
 
 
 
